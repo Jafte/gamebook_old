@@ -1,0 +1,32 @@
+version: "2.2"
+services:
+  web:
+    build: .
+    command: python3 manage.py runserver 0.0.0.0:8000
+    env_file: .env
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  huey:
+    build: .
+    command: python3 manage.py run_huey
+    env_file: .env
+    volumes:
+      - .:/usr/src/app
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: "postgres:alpine"
+    restart: always
+    env_file: .env
+
+  redis:
+    image: "redis:alpine"
+    restart: always

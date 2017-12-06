@@ -2,3 +2,8 @@ Django==2.0
 pytz==2017.3
 redis==2.10.6
 python-telegram-bot==8.1.1
+psycopg2==2.7.3.2
+django-redis==4.8.0
+huey==1.5.5
+django-environ==0.4.4
+gunicorn==19.7.1
