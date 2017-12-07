@@ -15,8 +15,26 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from game.views import IndexView
 
 urlpatterns = [
     path('telegrambot/', include('telegrambot.urls')),
+
+    path('accounts/profile/', IndexView.as_view()),
+    path('accounts/', include('allauth.urls')),
+
+    path('games/', include('game.urls')),
+
     path('admin/', admin.site.urls),
+
+    path('', IndexView.as_view()),
 ]
+
+if settings.DEBUG:
+    from django.contrib.staticfiles import views
+    from django.urls import re_path
+
+    urlpatterns += [
+        re_path(r'^static/(?P<path>.*)$', views.serve),
+    ]

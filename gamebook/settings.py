@@ -32,6 +32,7 @@ ALLOWED_HOSTS = [
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -41,7 +42,14 @@ INSTALLED_APPS = [
     #'raven.contrib.django.raven_compat',
 
     'telegrambot',
+    'game',
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -156,7 +164,7 @@ STATIC_URL = '/static/'
 
 
 RAVEN_CONFIG = {
-    'dsn': 'https://734a0d7112c94fff9c0636e0fe982e35:d98fbadf7a87442e95d46a705ad84c89@sentry.io/194109',
+    'dsn': env('DJANGO_SENTRY_DSN', None),
     'release': '0.0.0',
 }
 
@@ -192,3 +200,18 @@ LOGGING = {
         }
     }
 }
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+
+
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = env('EMAIL_PORT')
