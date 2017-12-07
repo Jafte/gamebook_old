@@ -33,6 +33,8 @@ class User(models.Model):
     first_name = models.CharField(_('First name'), max_length=255)
     last_name = models.CharField(_('Last name'), max_length=255, blank=True, null=True)
     username = models.CharField(_('User name'), max_length=255, blank=True, null=True)
+    is_bot = models.BooleanField(_('Is user a Bot'), default=False)
+    language_code = models.CharField(_('Langiage code'), max_length=255, blank=True, null=True)
     site_user = models.ForeignKey(to=settings.AUTH_USER_MODEL , verbose_name=_('Site user'),
                                   related_name='telegram_users', on_delete=models.CASCADE, blank=True, null=True)
 

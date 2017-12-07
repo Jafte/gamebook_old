@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/2.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
-
 import environ
 root = environ.Path(__file__) - 1 # three folder back (/a/b/c/ - 3 = /)
 env = environ.Env(DEBUG=(bool, False),) # set default values and casting
@@ -39,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'huey.contrib.djhuey',
+    #'raven.contrib.django.raven_compat',
 
     'telegrambot',
 ]
@@ -155,18 +155,40 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
+RAVEN_CONFIG = {
+    'dsn': 'https://734a0d7112c94fff9c0636e0fe982e35:d98fbadf7a87442e95d46a705ad84c89@sentry.io/194109',
+    'release': '0.0.0',
+}
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
     'handlers': {
         'console': {
+            'level': 'INFO',
+            'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
-        },
+            'formatter': 'simple'
+        }
     },
     'loggers': {
-        'django': {
+        'telegrambot.views': {
             'handlers': ['console'],
             'level': 'INFO',
-        },
-    },
+        }
+    }
 }
