@@ -5,6 +5,7 @@ import ast
 
 from django.db import models
 from django.conf import settings
+from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 from telegrambot.utils import validate_token
 
@@ -134,7 +135,7 @@ class Bot(models.Model):
         return "%s" % (self.user_api.first_name or self.token if self.user_api else self.token)
 
     def init_bot(self):
-        self._bot = telegram.bot(self.token)
+        self._bot = telegram.Bot(self.token)
 
     @property
     def hook_id(self):
@@ -142,18 +143,14 @@ class Bot(models.Model):
 
     @property
     def hook_url(self):
-        return 'permabots:telegrambot'
+        return reverse('telegrambot_hook', args=(self.id, ))
 
     @property
     def null_url(self):
         return None
 
-    @property
-    def identity(self):
-        return 'telegram'
-
     def set_webhook(self, url):
-        self._bot.set_webhook(webhook_url=url)
+        self._bot.set_webhook(url=url)
 
     def _get_chat_and_user(self, update):
         if update.message:
