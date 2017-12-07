@@ -10,24 +10,6 @@ from django.utils.translation import ugettext_lazy as _
 from telegrambot.utils import validate_token
 
 
-class State(models.Model):
-    """
-    Represents a state for a conversation and a bot.
-    Depending the state of the chat only some actions can be performed.
-    """
-    created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
-    updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    name = models.CharField(_('State name'), db_index=True, max_length=255,
-                            help_text=_("Name of the state"))
-
-    class Meta:
-        verbose_name = _('State')
-        verbose_name_plural = _('States')
-
-    def __str__(self):
-        return "%s" % self.name
-
-
 class User(models.Model):
     id = models.BigIntegerField(primary_key=True)
     first_name = models.CharField(_('First name'), max_length=255)
@@ -72,13 +54,17 @@ class Chat(models.Model):
 
 
 class ChatState(models.Model):
+    STATE_MENU, STATE_GAME = 'game', 'menu'
+    STATE_CHOICES = (
+        (STATE_MENU, _('in main menu')),
+        (STATE_GAME, _('in game')),
+    )
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
     context = models.TextField(verbose_name=_("Context"),
                                help_text=_("Context serialized to json when this state was set"), null=True,
                                blank=True)
-    state = models.ForeignKey(State, verbose_name=_('State'), related_name='%(class)s_chat',
-                              help_text=_("State related to the chat"), on_delete=models.CASCADE)
+    state = models.CharField(max_length=20, choices=STATE_CHOICES)
     chat = models.ForeignKey(Chat, db_index=True, verbose_name=_('Chat'), related_name='telegram_chatstates',
                              help_text=_("Chat in Telegram API format. https://core.telegram.org/bots/api#chat"),
                              on_delete = models.CASCADE)
@@ -140,16 +126,8 @@ class Bot(models.Model):
         self._bot = telegram.Bot(self.token)
 
     @property
-    def hook_id(self):
-        return str(self.id)
-
-    @property
     def hook_url(self):
         return reverse('telegrambot_hook', args=(self.id, ))
-
-    @property
-    def null_url(self):
-        return None
 
     def set_webhook(self, url):
         self._bot.set_webhook(url=url)
@@ -172,8 +150,10 @@ class Bot(models.Model):
     def get_chat_state(self, message):
         chat, user = self._get_chat_and_user(message)
         try:
-            return ChatState.objects.select_related('state', 'chat', 'user').get(chat=chat, user=user,
-                                                                                         state__bot=self.bot)
+            return ChatState.objects.select_related('chat', 'user').get(
+                chat=chat,
+                user=user,
+            )
         except ChatState.DoesNotExist:
             return None
 
@@ -240,14 +220,59 @@ class Bot(models.Model):
         can_update = True
         for msg in msgs:
             if update_message_id and can_update:
-                self._bot.edit_message_text(chat_id=chat_id, message_id=update_message_id, text=msg[0],
-                                            parse_mode=parse_mode,
-                                            disable_web_page_preview=disable_web_page_preview,
-                                            reply_markup=msg[1])
+                self._bot.edit_message_text(
+                    chat_id=chat_id,
+                    message_id=update_message_id,
+                    text=msg[0],
+                    parse_mode=parse_mode,
+                    disable_web_page_preview=disable_web_page_preview,
+                    reply_markup=msg[1]
+                )
                 can_update = False
             else:
-                self._bot.send_message(chat_id=chat_id, text=msg[0], parse_mode=parse_mode,
-                                       disable_web_page_preview=disable_web_page_preview, reply_markup=msg[1])
+                self._bot.send_message(
+                    chat_id=chat_id,
+                    text=msg[0],
+                    parse_mode=parse_mode,
+                    disable_web_page_preview=disable_web_page_preview,
+                    reply_markup=msg[1]
+                )
+
+    def update_chat_state(self, message, chat_state, target_state, context):
+        context_target_state = chat_state.state if chat_state else '_start'
+        if not chat_state:
+            logger.warning(
+                "Chat/sender state for update chat {} not exists".format(
+                    self.get_chat_id(message)
+                )
+            )
+            self.create_chat_state(message, target_state, {context_target_state: context})
+        else:
+            if chat_state.state != target_state:
+                state_context = chat_state.ctx
+                state_context[context_target_state] = context
+                chat_state.ctx = state_context
+                chat_state.state = target_state
+                chat_state.save()
+                logger.debug(
+                    "Chat state updated:%s for message %s with (%s,%s)" %
+                    (target_state, message, chat_state.state, context)
+                )
+            else:
+                logger.debug("ChateState stays in %s" % target_state)
+
+    def handle_message(self, message):
+        """
+        Process incoming message generating a response to the sender.
+        :param message: Generic message received from provider
+        """
+        chat_state = self.get_chat_state(message)
+
+        if chat_state.state == ChatState.STATE_GAME:
+            pass
+
+        if chat_state.state == ChatState.STATE_MENU:
+            pass
 
 
 class Message(models.Model):

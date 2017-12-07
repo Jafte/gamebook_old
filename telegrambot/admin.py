@@ -1,5 +1,5 @@
 from django.contrib import admin
-from telegrambot.models import User, State, Chat, ChatState, Bot, Message, Update, CallbackQuery
+from telegrambot.models import User, Chat, ChatState, Bot, Message, Update, CallbackQuery
 
 @admin.register(User)
 class TelegramUserAdmin(admin.ModelAdmin):
@@ -7,10 +7,6 @@ class TelegramUserAdmin(admin.ModelAdmin):
 
 @admin.register(Bot)
 class BotAdmin(admin.ModelAdmin):
-    pass
-
-@admin.register(State)
-class StateAdmin(admin.ModelAdmin):
     pass
 
 @admin.register(Chat)
