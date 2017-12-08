@@ -8,6 +8,7 @@ from django.conf import settings
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 from telegrambot.utils import validate_token
+from game.models import Session, Game
 
 
 class User(models.Model):
@@ -54,7 +55,7 @@ class Chat(models.Model):
 
 
 class ChatState(models.Model):
-    STATE_MENU, STATE_GAME = 'game', 'menu'
+    STATE_MENU, STATE_GAME = 'menu', 'game'
     STATE_CHOICES = (
         (STATE_MENU, _('in main menu')),
         (STATE_GAME, _('in game')),
@@ -87,7 +88,7 @@ class ChatState(models.Model):
     ctx = property(_get_context, _set_context)
 
     def __str__(self):
-        return "(%s:%s)" % (str(self.chat.id), self.state.name)
+        return "(%s:%s)" % (str(self.chat.id), self.state)
 
 
 class Bot(models.Model):
@@ -167,32 +168,17 @@ class Bot(models.Model):
             return telegram.InlineKeyboardButton(text=element, callback_data=element)
 
     def build_keyboard(self, keyboard):
-        if keyboard:
-            keyboard_data = ast.literal_eval(keyboard)
-            keyboard_data_redy_to_built = []
-
-            if not isinstance(keyboard_data, list):
-                row_data_redy_to_built = [self._create_keyboard_button(keyboard_data)]
-                keyboard_data_redy_to_built.append(row_data_redy_to_built)
-            else:
-                for element in keyboard_data:
-                    if not isinstance(element, list):
-                        row_data_redy_to_built = [self._create_keyboard_button(element)]
-                    else:
-                        row_data_redy_to_built = []
-                        for subelement in element:
-                            row_data_redy_to_built.append(self._create_keyboard_button(subelement))
-
-                    keyboard_data_redy_to_built.append(row_data_redy_to_built)
-
-            built_keyboard = telegram.InlineKeyboardMarkup(keyboard_data_redy_to_built)
-        else:
-            built_keyboard = telegram.InlineKeyboardMarkup([])
-        return built_keyboard
+        keyboard_data_redy_to_built = []
+        for row in keyboard:
+            row_data_redy_to_built = []
+            for button in row:
+                row_data_redy_to_built.append(self._create_keyboard_button(button))
+            keyboard_data_redy_to_built.append(row_data_redy_to_built)
+        return telegram.InlineKeyboardMarkup(keyboard_data_redy_to_built)
 
     def create_chat_state(self, message, target_state, context):
         chat, user = self._get_chat_and_user(message)
-        ChatState.objects.create(
+        return ChatState.objects.create(
             chat=chat,
             user=user,
             state=target_state,
@@ -203,7 +189,7 @@ class Bot(models.Model):
         chat, user = self._get_chat_and_user(message)
         return chat.id
 
-    def send_message(self, chat_id, text, keyboard, update_message=None, user=None):
+    def send_message(self, chat_id, text, keyboard=None, update_message=None):
         parse_mode = telegram.ParseMode.HTML
         disable_web_page_preview = True
         update_message_id = None
@@ -238,41 +224,100 @@ class Bot(models.Model):
                     reply_markup=msg[1]
                 )
 
-    def update_chat_state(self, message, chat_state, target_state, context):
-        context_target_state = chat_state.state if chat_state else '_start'
-        if not chat_state:
-            logger.warning(
-                "Chat/sender state for update chat {} not exists".format(
-                    self.get_chat_id(message)
-                )
-            )
-            self.create_chat_state(message, target_state, {context_target_state: context})
-        else:
-            if chat_state.state != target_state:
-                state_context = chat_state.ctx
-                state_context[context_target_state] = context
-                chat_state.ctx = state_context
-                chat_state.state = target_state
-                chat_state.save()
-                logger.debug(
-                    "Chat state updated:%s for message %s with (%s,%s)" %
-                    (target_state, message, chat_state.state, context)
-                )
-            else:
-                logger.debug("ChateState stays in %s" % target_state)
-
     def handle_message(self, message):
         """
         Process incoming message generating a response to the sender.
         :param message: Generic message received from provider
         """
         chat_state = self.get_chat_state(message)
+        chat, user = self._get_chat_and_user(message)
+        if not chat_state:
+            chat_state = self.create_chat_state(message, ChatState.STATE_MENU, {})
 
-        if chat_state.state == ChatState.STATE_GAME:
-            pass
+        chat_context = chat_state.ctx
+        text = self.message_text(message)
 
         if chat_state.state == ChatState.STATE_MENU:
+            """
+            /games - список квестов на боте
+            /my - список активных квестов чувака
+            """
+            if text == "/my":
+                response_message = "Ваши активные квесты:\n"
+                response_keyboard_row = []
+                for idx, session in enumerate(Session.objects.filter(user=user)):
+                    response_message += "{}. <b>{}</b>\n".format(idx, sessions.game.name)
+                    response_keyboard_row.append((idx, session.id))
+                chat_context["section"] = "my"
+                self.send_message(
+                    chat.id,
+                    response_message,
+                    self.build_keyboard([response_keyboard_row, ])
+                )
+
+            if text == "/games":
+                response_message = "Доступные квесты:\n"
+                response_keyboard_row = []
+                for idx, game in enumerate(Game.objects.filter(status=Game.STATUS_PUBLISHED)):
+                    response_message += "{}. <b>{}</b>\n{}\n".format(idx, game.name, game.description)
+                    response_keyboard_row.append((idx, game.id))
+                else:
+                    response_message += "ни одного квеста не нашли :("
+                chat_context["section"] = "games"
+                self.send_message(
+                    chat.id,
+                    response_message,
+                    self.build_keyboard([response_keyboard_row, ])
+                )
+            
+            if chat_context["section"] == "my":
+                try:
+                    session = Session.objects.get(user=user, pk=text)
+                    if message.callback_query:
+                        self.bot.edit_message_reply_markup(
+                            chat_id=chat.id,
+                            message_id=message.callback_query.message.message_id,
+                            reply_markup=None
+
+                        )
+                except Session.DoesNotExist:
+                    self.send_message(
+                        chat.id,
+                        "Сессия не найдена :(",
+                        None,
+                        message.callback_query.message.message_id if message.callback_query else None
+                    )
+                
+                chat_context.state = ChatState.STATE_GAME
+
+                game_data = session.get_game_data()
+                self.send_message(
+                    chat.id,
+                    "{}:\n\n{}".format(session.game.name, game_data["vision"])
+                )
+                
+                response_message = ""
+                response_keyboard_row = []
+                for idx, action in enumerate(game_data["actions"]):
+                    response_message += "{}. {}\n\n".format(idx, action["content"])
+                    response_keyboard_row.append((idx, action["id"]))
+                
+                self.send_message(
+                    chat.id,
+                    response_message,
+                    self.build_keyboard([response_keyboard_row, ])
+                )
+
+
+        if chat_state.state == ChatState.STATE_GAME:
+            """
+            /exit
+            /finish
+            """
             pass
+
+        chat_state.ctx = chat_context
+        chat_state.save()
 
 
 class Message(models.Model):

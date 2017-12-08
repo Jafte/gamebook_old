@@ -465,7 +465,7 @@ class Session(models.Model):
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
     game = models.ForeignKey(to='Game', verbose_name=_('game'), related_name='users_sessions', on_delete=models.CASCADE)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES)
-    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, verbose_name=_('user'),
+    user = models.ForeignKey(to='telegrambot.User', verbose_name=_('user'),
                              related_name='games_sessions', on_delete=models.CASCADE)
 
     active_character = models.ForeignKey(to='SessionCharacter', verbose_name=_('active character'),

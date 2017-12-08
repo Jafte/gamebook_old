@@ -9,9 +9,13 @@ https://docs.djangoproject.com/en/2.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
+import os
 import environ
-root = environ.Path(__file__) - 1 # three folder back (/a/b/c/ - 3 = /)
+root = environ.Path(__file__) - 2 # three folder back (/a/b/c/ - 3 = /)
 env = environ.Env(DEBUG=(bool, False),) # set default values and casting
+
+if os.path.exists(root(".env")):
+    environ.Env.read_env(root(".env"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
@@ -91,7 +95,7 @@ DATABASES = {
         'NAME': env('POSTGRES_DB'),
         'USER': env('POSTGRES_USER'),
         'PASSWORD': env('POSTGRES_PASSWORD'),
-        'HOST': 'db',
+        'HOST': env('POSTGRES_HOST'),
         'PORT': 5432,
     }
 }
