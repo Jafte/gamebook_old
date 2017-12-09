@@ -32,6 +32,12 @@ class Game(models.Model):
     def get_absolute_url(self):
         return reverse('game_detail', args=(self.pk, ))
 
+    def can_create_new_character(self):
+        if self.characters.count() == 0:
+            return True
+
+        return False
+
     def start_new_game(self, user):
         Session.active.filter(user=user, game=self).update(status = Session.STATUS_FINISHED)
 

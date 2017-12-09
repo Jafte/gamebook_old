@@ -3,11 +3,17 @@
 {% block head_title %}{{ object.name }} in game "{{ object.game.name }}"{% endblock %}
 
 {% block content %}
+    <ul class="uk-breadcrumb">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'game_list' %}">Games</a></li>
+        <li><a href="{{ object.game.get_absolute_url }}">{{ object.game.name }}</a></li>
+        <li class="uk-active"><span>{{ object.name }}</span></li>
+    </ul>
     <h1>{{ object.name }}</h1>
-    <small>game: {{ object.game.name }}</small>
     <p>
         {{ object.description }}
     </p>
+    {% comment %}
     <div class="properties-list">
         <h3>Properties</h3>
         {% for property in object.properties.all %}
@@ -25,4 +31,5 @@
             </a>
         </div>
     </div>
+    {% endcomment %}
 {% endblock %}

@@ -3,11 +3,24 @@
 {% block head_title %}{% if object %}Edit{% else %}Crete{% endif %} character for game "{{ game.name }}"{% endblock %}
 
 {% block content %}
+    <ul class="uk-breadcrumb">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'game_list' %}">Games</a></li>
+        <li><a href="{{ game.get_absolute_url }}">{{ game.name }}</a></li>
+        {% if object %}
+        <li><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></li>
+        {% endif %}
+        <li class="uk-active"><span>{% if object %}Edit{% else %}Crete{% endif %} character</span></li>
+    </ul>
     <h1>
         {% if object %}Edit{% else %}Crete{% endif %} character for game "{{ game.name }}"
     </h1>
-    <form class="uk-form" action="" method="post">{% csrf_token %}
-        {{ form.as_p }}
-        <button class="uk-button-success uk-button">{% if object %}update{% else %}crete{% endif %}</button>
-    </form>
+    {% if game.can_create_new_character %}
+        <form class="uk-form" action="" method="post">{% csrf_token %}
+            {{ form.as_p }}
+            <button class="uk-button-success uk-button">{% if object %}update{% else %}crete{% endif %}</button>
+        </form>
+    {% else %}
+        <p>You can't create more characters :(</p>
+    {% endif %}
 {% endblock %}

@@ -3,6 +3,11 @@
 {% block head_title %}{{ object.name }}{% endblock %}
 
 {% block content %}
+    <ul class="uk-breadcrumb">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'game_list' %}">Games</a></li>
+        <li class="uk-active"><span>{{ object.name }}</span></li>
+    </ul>
     <h1>{{ object.name }}</h1>
     <p>
         {{ object.description }}
@@ -10,18 +15,54 @@
     <div class="charactere-list">
         <h3>Characters</h3>
         {% for character in object.characters.all %}
-        <div class="character-list-item uk-grid">
-            {{ character }}
-        </div>
+            <div class="character-list-item uk-grid uk-grid-divider">
+                <div class="uk-width-3-4">
+                    <h3>
+                        <a href="{{ character.get_absolute_url }}">
+                            {{ character.name }}
+                        </a>
+                    </h3>
+                    <p>{{ character.description }}</p>
+                </div>
+                <div class="uk-width-1-4">
+                    <ul class="uk-list">
+                        <li>
+                            created at: {{ character.created_at }}
+                        </li>
+                        <li>
+                            updated at: {{ character.updated_at }}
+                        </li>
+                        <li>
+                            <a
+                                class="uk-button uk-button-mini uk-button-primary"
+                                href="{% url 'character_update' game.pk character.pk %}"
+                            >
+                                update
+                            </a>
+                            <a
+                                class="uk-button uk-button-mini uk-button-danger"
+                                href="{% url 'character_delete' game.pk character.pk %}"
+                            >
+                                delete
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            {% if not forloop.last %}
+                <hr class="uk-grid-divider">
+            {% endif %}
         {% empty %}
             <p>
                 <b>No Characters :(</b>
             </p>
         {% endfor %}
-        <div class="character-list-buttons uk-margin-top">
-            <a href="{% url 'character_create' object.pk %}" class="uk-button">
-                create character
-            </a>
-        </div>
+        {% if game.can_create_new_character %}
+            <div class="character-list-buttons uk-margin-top">
+                <a href="{% url 'character_create' object.pk %}" class="uk-button">
+                    create character
+                </a>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}

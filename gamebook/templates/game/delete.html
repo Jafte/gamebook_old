@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block head_title %}Delete game {{ object.name }}{% endblock %}
+
+{% block content %}
+    <ul class="uk-breadcrumb">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'game_list' %}">Games</a></li>
+        <li><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></li>
+        <li class="uk-active"><span>Delete</span></li>
+    </ul>
+    <h1>Delete game {{ object.name }}</h1>
+    <form class="uk-form" action="" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="uk-button-success uk-button">confirm delete</button>
+    </form>
+{% endblock %}

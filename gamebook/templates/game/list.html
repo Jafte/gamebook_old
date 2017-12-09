@@ -3,6 +3,10 @@
 {% block head_title %}Games{% endblock %}
 
 {% block content %}
+    <ul class="uk-breadcrumb">
+        <li><a href="/">Home</a></li>
+        <li class="uk-active"><span>Games</span></li>
+    </ul>
     <h1>Games</h1>
     <div class="buttons uk-margin-bottom">
         <a class="uk-button" href="{% url 'game_create' %}">add new</a>
@@ -30,9 +34,6 @@
                             status: {{ game.get_status_display }}
                         </li>
                         <li>
-                            <a class="uk-button uk-button-mini uk-button-primary" href="{% url 'game_update' game.pk %}">
-                                update
-                            </a>
                             {% if game.status == game.STATUS_DRAFT %}
                             <a class="uk-button uk-button-mini uk-button-success" href="#">
                                 publish
@@ -42,6 +43,12 @@
                                 unpublish
                             </a>
                             {% endif %}
+                            <a class="uk-button uk-button-mini uk-button-primary" href="{% url 'game_update' game.pk %}">
+                                update
+                            </a>
+                            <a class="uk-button uk-button-mini uk-button-danger" href="{% url 'game_delete'  game.pk %}">
+                                delete
+                            </a>
                         </li>
                     </ul>
                 </div>

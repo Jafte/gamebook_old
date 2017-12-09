@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block head_title %}Delete character in game "{{ game.name }}"{% endblock %}
+
+{% block content %}
+    <ul class="uk-breadcrumb">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'game_list' %}">Games</a></li>
+        <li><a href="{{ game.get_absolute_url }}">{{ game.name }}</a></li>
+        <li><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></li>
+        <li class="uk-active"><span>Delete character</span></li>
+    </ul>
+    <h1>
+        Delete character
+        "{{ object.name }}"
+    </h1>
+    <p>
+        game: {{ game.name }}
+    </p>
+    <form class="uk-form" action="" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="uk-button-success uk-button">confirm delete</button>
+    </form>
+{% endblock %}

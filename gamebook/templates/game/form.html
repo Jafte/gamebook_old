@@ -3,6 +3,14 @@
 {% block head_title %}Games {% if object %}edit{% else %}crete{% endif %}{% endblock %}
 
 {% block content %}
+    <ul class="uk-breadcrumb">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'game_list' %}">Games</a></li>
+        {% if object %}
+        <li><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></li>
+        {% endif %}
+        <li class="uk-active"><span>{% if object %}edit{% else %}crete{% endif %}</span></li>
+    </ul>
     <h1>Games</h1>
     <form class="uk-form" action="" method="post">{% csrf_token %}
         {{ form.as_p }}
