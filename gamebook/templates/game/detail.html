@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block head_title %}{{ object.name }}{% endblock %}
+
+{% block content %}
+    <h1>{{ object.name }}</h1>
+    <p>
+        {{ object.description }}
+    </p>
+    <div class="charactere-list">
+        <h3>Characters</h3>
+        {% for character in object.characters.all %}
+        <div class="character-list-item uk-grid">
+            {{ character }}
+        </div>
+        {% empty %}
+            <p>
+                <b>No Characters :(</b>
+            </p>
+        {% endfor %}
+        <div class="character-list-buttons uk-margin-top">
+            <a href="{% url 'character_create' object.pk %}" class="uk-button">
+                create character
+            </a>
+        </div>
+    </div>
+{% endblock %}

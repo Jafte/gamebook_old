@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block head_title %}Games{% endblock %}
+
+{% block content %}
+    <h1>Games</h1>
+    <div class="buttons uk-margin-bottom">
+        <a class="uk-button" href="{% url 'game_create' %}">add new</a>
+    </div>
+    <div class="object_list">
+        {% for game in object_list %}
+            <div class="uk-grid uk-grid-divider">
+                <div class="uk-width-3-4">
+                    <h3>
+                        <a href="{{ game.get_absolute_url }}">
+                            {{ game.name }}
+                        </a>
+                    </h3>
+                    <p>{{ game.description }}</p>
+                </div>
+                <div class="uk-width-1-4">
+                    <ul class="uk-list">
+                        <li>
+                            created at: {{ game.created_at }}
+                        </li>
+                        <li>
+                            updated at: {{ game.updated_at }}
+                        </li>
+                        <li>
+                            status: {{ game.get_status_display }}
+                        </li>
+                        <li>
+                            <a class="uk-button uk-button-mini uk-button-primary" href="{% url 'game_update' game.pk %}">
+                                update
+                            </a>
+                            {% if game.status == game.STATUS_DRAFT %}
+                            <a class="uk-button uk-button-mini uk-button-success" href="#">
+                                publish
+                            </a>
+                            {% else %}
+                            <a class="uk-button uk-button-mini uk-button-danger" href="#">
+                                unpublish
+                            </a>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            {% if not forloop.last %}
+                <hr class="uk-grid-divider">
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endblock %}

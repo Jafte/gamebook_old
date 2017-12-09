@@ -2,8 +2,7 @@ import logging
 from django.db import models
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
+from django.urls import reverse
 
 
 logger = logging.getLogger(__name__)
@@ -20,7 +19,7 @@ class Game(models.Model):
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
     name = models.CharField(verbose_name=_('name'), max_length=250)
     description = models.TextField(verbose_name=_('description'), blank=True)
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=STATUS_DRAFT)
     author = models.ForeignKey(to=settings.AUTH_USER_MODEL, verbose_name=_('author'),
                                related_name='created_games', on_delete=models.CASCADE)
 
@@ -29,6 +28,9 @@ class Game(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('game_detail', args=(self.pk, ))
 
     def start_new_game(self, user):
         Session.active.filter(user=user, game=self).update(status = Session.STATUS_FINISHED)
@@ -64,6 +66,9 @@ class Character(models.Model):
 
     def __str__(self):
         return "%s (%s)" % (self.name, self.game)
+
+    def get_absolute_url(self):
+        return reverse('character_detail', args=(self.game.pk, self.pk, ))
 
     def create_new(self, session):
         if self.start_scene:

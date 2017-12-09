@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block head_title %}{% if object %}Edit{% else %}Crete{% endif %} character for game "{{ game.name }}"{% endblock %}
+
+{% block content %}
+    <h1>
+        {% if object %}Edit{% else %}Crete{% endif %} character for game "{{ game.name }}"
+    </h1>
+    <form class="uk-form" action="" method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <button class="uk-button-success uk-button">{% if object %}update{% else %}crete{% endif %}</button>
+    </form>
+{% endblock %}

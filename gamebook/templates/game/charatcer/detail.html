@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block head_title %}{{ object.name }} in game "{{ object.game.name }}"{% endblock %}
+
+{% block content %}
+    <h1>{{ object.name }}</h1>
+    <small>game: {{ object.game.name }}</small>
+    <p>
+        {{ object.description }}
+    </p>
+    <div class="properties-list">
+        <h3>Properties</h3>
+        {% for property in object.properties.all %}
+        <div class="properties-list-item uk-grid">
+            {{ property }}
+        </div>
+        {% empty %}
+            <p>
+                <b>No Properties :(</b>
+            </p>
+        {% endfor %}
+        <div class="properties-list-item uk-margin-top">
+            <a href="#" class="uk-button">
+                create property
+            </a>
+        </div>
+    </div>
+{% endblock %}
