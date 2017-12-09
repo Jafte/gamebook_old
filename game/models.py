@@ -38,6 +38,9 @@ class Game(models.Model):
 
         return False
 
+    def can_create_new_scene(self):
+        return True
+
     def start_new_game(self, user):
         Session.active.filter(user=user, game=self).update(status = Session.STATUS_FINISHED)
 
@@ -233,6 +236,9 @@ class Scene(models.Model):
 
     def __str__(self):
         return "%s" % self.name
+
+    def get_absolute_url(self):
+        return reverse('scene_detail', args=(self.game.pk, self.pk, ))
 
     def set_visible(self, session_character):
         logger.debug("Cant change visibility for scene, fire by %s" % session_character)

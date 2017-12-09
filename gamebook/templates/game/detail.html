@@ -9,11 +9,13 @@
         <li class="uk-active"><span>{{ object.name }}</span></li>
     </ul>
     <h1>{{ object.name }}</h1>
+
     <p>
         {{ object.description }}
     </p>
-    <div class="charactere-list">
-        <h3>Characters</h3>
+
+    <div class="characters-list uk-margin">
+        <h2>Characters</h2>
         {% for character in object.characters.all %}
             <div class="character-list-item uk-grid uk-grid-divider">
                 <div class="uk-width-3-4">
@@ -61,6 +63,62 @@
             <div class="character-list-buttons uk-margin-top">
                 <a href="{% url 'character_create' object.pk %}" class="uk-button">
                     create character
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <hr/>
+
+    <div class="scenes-list uk-margin">
+        <h2>Scenes</h2>
+        {% for scene in object.scenes.all %}
+            <div class="scene-list-item uk-grid uk-grid-divider">
+                <div class="uk-width-3-4">
+                    <h3>
+                        <a href="{{ scene.get_absolute_url }}">
+                            {{ scene.name }}
+                        </a>
+                    </h3>
+                    <p>{{ scene.description }}</p>
+                </div>
+                <div class="uk-width-1-4">
+                    <ul class="uk-list">
+                        <li>
+                            created at: {{ scene.created_at }}
+                        </li>
+                        <li>
+                            updated at: {{ scene.updated_at }}
+                        </li>
+                        <li>
+                            <a
+                                class="uk-button uk-button-mini uk-button-primary"
+                                href="{% url 'scene_update' game.pk scene.pk %}"
+                            >
+                                update
+                            </a>
+                            <a
+                                class="uk-button uk-button-mini uk-button-danger"
+                                href="{% url 'scene_delete' game.pk scene.pk %}"
+                            >
+                                delete
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            {% if not forloop.last %}
+                <hr class="uk-grid-divider">
+            {% endif %}
+        {% empty %}
+            <p>
+                <b>No Scenes :(</b>
+            </p>
+        {% endfor %}
+        {% if game.can_create_new_scene %}
+            <div class="character-list-buttons uk-margin-top">
+                <a href="{% url 'scene_create' object.pk %}" class="uk-button">
+                    create scene
                 </a>
             </div>
         {% endif %}

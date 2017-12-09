@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
-from game.views import IndexView
+from game.views.base import IndexView
 
 urlpatterns = [
     path('telegrambot/', include('telegrambot.urls')),

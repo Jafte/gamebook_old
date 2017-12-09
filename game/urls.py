@@ -1,6 +1,7 @@
 from django.urls import path
-from game.views import GameListView, GameCreateView, GameDetailView, GameUpdateView, GameDeleteView, \
-                       CharacterCreateView, CharacterDetailView, CharacterUpdateView, CharacterDeleteView
+from game.views.game import GameListView, GameCreateView, GameDetailView, GameUpdateView, GameDeleteView
+from game.views.charatcer import CharacterCreateView, CharacterDetailView, CharacterUpdateView, CharacterDeleteView
+from game.views.scene import SceneCreateView, SceneDetailView, SceneUpdateView, SceneDeleteView
 
 urlpatterns = [
     path('', GameListView.as_view(), name="game_list"),
@@ -14,4 +15,9 @@ urlpatterns = [
     path('g<int:game_pk>/ch<int:character_pk>/', CharacterDetailView.as_view(), name="character_detail"),
     path('g<int:game_pk>/ch<int:character_pk>/edit/', CharacterUpdateView.as_view(), name="character_update"),
     path('g<int:game_pk>/ch<int:character_pk>/delete/', CharacterDeleteView.as_view(), name="character_delete"),
+
+    path('g<int:game_pk>/create-scene/', SceneCreateView.as_view(), name="scene_create"),
+    path('g<int:game_pk>/s<int:scene_pk>/', SceneDetailView.as_view(), name="scene_detail"),
+    path('g<int:game_pk>/s<int:scene_pk>/edit/', SceneUpdateView.as_view(), name="scene_update"),
+    path('g<int:game_pk>/s<int:scene_pk>/delete/', SceneDeleteView.as_view(), name="scene_delete"),
 ]
