@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block head_title %}Play: {{ object.name }}{% endblock %}
+
+{% block content %}
+    <ul class="uk-breadcrumb">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'game_list' %}">Games</a></li>
+        <li><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></li>
+        <li class="uk-active"><span>Play</span></li>
+    </ul>
+    
+    <h1>{{ object.name }}</h1>
+    
+    <p>
+        активный перс: {{ session.active_character.character.name }}
+    </p>
+
+    <hr/>
+    {{ session.gamelogs.all }}
+
+    {{ session.get_game_data }}
+
+    <div class="uk-grid uk-grid-divider uk-margin">
+        <div class="uk-width-1-2">
+            <form class="uk-form" action="" method="post">{% csrf_token %}
+                <input type="hidden" name="action" value="new_game" />
+                <button class="uk-button-success uk-button">new game</button>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

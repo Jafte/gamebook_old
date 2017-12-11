@@ -41,22 +41,20 @@ class Game(models.Model):
     def can_create_new_scene(self):
         return True
 
-    def start_new_game(self, user):
-        Session.active.filter(user=user, game=self).update(status = Session.STATUS_FINISHED)
-
-        session = Session(
-            status=Session.STATUS_ACTIVE,
+    def user_game(self, user):
+        session, created = Session.objects.get_or_create(
             user=user,
             game=self,
+            status=Session.STATUS_ACTIVE
         )
-        session.save()
 
-        for character in self.characters.all():
-            session_character = character.create_new(session)
+        if created:
+            for character in self.characters.all():
+                session_character = character.create_new(session)
 
-            if not session.active_character:
-                session.active_character = session_character
-                session.save()
+                if not session.active_character:
+                    session.active_character = session_character
+                    session.save()
 
         return session
 
@@ -514,3 +512,21 @@ class Session(models.Model):
     def finish_game(self):
         self.status = self.STATUS_FINISHED
         self.save()
+
+
+class Gamelog(models.Model):
+    SOURCE_USER, SOURCE_GAME = 'u', 'g'
+    SOURCE_CHOICES = (
+        (SOURCE_USER, _('user')),
+        (SOURCE_GAME, _('game')),
+    )
+
+    session = models.ForeignKey(to='Session', verbose_name=_('session'), related_name='gamelogs',
+                                on_delete=models.CASCADE)
+    created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
+    source = models.CharField(max_length=1, choices=SOURCE_CHOICES, default=SOURCE_GAME)
+    text = models.TextField(verbose_name=_('text'))
+
+    class Meta:
+        ordering = ['-created_at', ]

@@ -73,7 +73,7 @@ TEMPLATES = [
         'DIRS': [
             root("gamebook/templates")
         ],
-        'APP_DIRS': False,
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -149,6 +149,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+ACCOUNT_ADAPTER = 'gamebook.account.adapter.GambookAccountAdapter'
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
@@ -221,3 +223,5 @@ EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = env('EMAIL_PORT')
+
+BOT_USER_ID = 28169368
