@@ -1,5 +1,6 @@
 import logging
 from django.db import models
+from django.db.models import Q
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse
@@ -160,6 +161,8 @@ class SessionCharacter(models.Model):
                                   related_name='in_games', on_delete=models.CASCADE)
     current_scene = models.ForeignKey(to='Scene', verbose_name=_('current scene'),
                                       related_name='scene_characters', on_delete=models.CASCADE)
+    current_moment = models.ForeignKey(to='Moment', verbose_name=_('current moment'),
+                                      related_name='moment_characters', on_delete=models.CASCADE)
     session = models.ForeignKey(to='Session', verbose_name=_('session'), related_name='characters',
                                 on_delete=models.CASCADE)
 
@@ -174,7 +177,11 @@ class SessionCharacter(models.Model):
     def get_scene_vision(self):
         result = []
 
-        blocks = self.current_scene.blocks.all()
+        query = Q(moment__isnull=True)
+        query.add(Q(moment=self.current_moment), Q.OR)
+        query.add(Q(scene=self.current_scene), Q.AND)
+
+        blocks = Block.objects.filter(query)
         for block in blocks:
             session_data = block.get_session_data(self)
 
@@ -186,7 +193,11 @@ class SessionCharacter(models.Model):
     def get_scene_actions(self):
         result = []
 
-        actions = self.current_scene.actions.all()
+        query = Q(moment__isnull=True)
+        query.add(Q(moment=self.current_moment), Q.OR)
+        query.add(Q(scene=self.current_scene), Q.AND)
+
+        actions = Action.objects.filter(query)
         for action in actions:
             session_data = action.get_session_data(self)
             if session_data.current_is_visible:
@@ -200,6 +211,15 @@ class SessionCharacter(models.Model):
             self.save()
         else:
             logger.debug("Cant go_to_scene %s" % scene)
+
+    def go_to_moment(self, moment):
+        if isinstance(moment, Moment):
+            self.current_moment = moment
+            if moment.scene != self.current_scene:
+                self.current_scene = moment.scene
+            self.save()
+        else:
+            logger.debug("Cant go_to_moment %s" % moment)
 
 
 class SessionCharacterProperty(models.Model):
@@ -248,11 +268,32 @@ class Scene(models.Model):
         logger.debug("Cant change value for Scene, fire by %s" % session_character)
 
 
+class Moment(models.Model):
+    created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
+    game = models.ForeignKey(to='Game', verbose_name=_('game'), related_name='moments', on_delete=models.CASCADE)
+    scene = models.ForeignKey(to='Scene', verbose_name=_('scene'), related_name='moments', on_delete=models.CASCADE)
+    name = models.CharField(verbose_name=_('name'), max_length=250)
+    order = models.SmallIntegerField(verbose_name=_('order'), default=100)
+    description = models.TextField(verbose_name=_('description'), blank=True)
+
+    class Meta:
+        ordering = ['scene', 'order', 'pk']
+
+    def __str__(self):
+        return "%s: %s" % (self.scene, self.name)
+
+    def get_absolute_url(self):
+        pass
+
+
 class Block(models.Model):
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
     game = models.ForeignKey(to='Game', verbose_name=_('game'), related_name='blocks', on_delete=models.CASCADE)
     scene = models.ForeignKey(to='Scene', verbose_name=_('scene'), related_name='blocks', null=True,
+                              on_delete=models.SET_NULL)
+    moment = models.ForeignKey(to='Moment', verbose_name=_('moment'), related_name='blocks', blank=True, null=True,
                               on_delete=models.SET_NULL)
     order = models.SmallIntegerField(verbose_name=_('order'), default=100)
     content = models.TextField(verbose_name=_('content'))
@@ -262,7 +303,7 @@ class Block(models.Model):
         ordering = ['game', 'scene', 'order', 'pk']
 
     def __str__(self):
-        return "%s: %s" % (self.scene, self.content[:50])
+        return "%s: %s" % (self.moment, self.content[:50])
 
     def get_session_data(self, session_character):
         obj, created = SessionBlock.objects.get_or_create(
@@ -311,6 +352,8 @@ class Action(models.Model):
                              editable=False)
     scene = models.ForeignKey(to=Scene, verbose_name=_('scene'), related_name='actions', null=True,
                               on_delete=models.SET_NULL)
+    moment = models.ForeignKey(to='Moment', verbose_name=_('moment'), related_name='actions', blank=True, null=True,
+                               on_delete=models.SET_NULL)
     order = models.SmallIntegerField(verbose_name=_('order'), default=100)
     content = models.TextField(verbose_name=_('content'))
     is_visible = models.BooleanField(verbose_name=_('is visible?'), default=True)
@@ -389,16 +432,13 @@ class AfterEffect(models.Model):
 
     go_to_scene = models.ForeignKey(to=Scene, related_name='after_effects', on_delete=models.CASCADE, blank=True,
                                     null=True)
+    go_to_moment = models.ForeignKey(to=Moment, related_name='after_effects', on_delete=models.CASCADE, blank=True,
+                                    null=True)
 
     hide_block = models.ForeignKey(to=Block, related_name='hide_after_effects', on_delete=models.CASCADE, blank=True,
                                    null=True)
     show_block = models.ForeignKey(to=Block, related_name='show_after_effects', on_delete=models.CASCADE, blank=True,
                                    null=True)
-
-    clear_scene_blocks = models.ForeignKey(to=Scene, related_name='clear_blocks_after_effects',
-                                           on_delete=models.CASCADE, blank=True, null=True)
-    clear_scene_actions = models.ForeignKey(to=Scene, related_name='clear_action_after_effects',
-                                            on_delete=models.CASCADE, blank=True, null=True)
 
     hide_action = models.ForeignKey(to=Action, related_name='hide_after_effects', on_delete=models.CASCADE, blank=True,
                                     null=True)
@@ -412,13 +452,12 @@ class AfterEffect(models.Model):
     class Meta:
         unique_together = (
             ("action", "go_to_scene"),
+            ("action", "go_to_moment"),
             ("action", "hide_block"),
             ("action", "show_block"),
             ("action", "hide_action"),
             ("action", "show_action"),
             ("action", "set_property"),
-            ("action", "clear_scene_blocks"),
-            ("action", "clear_scene_actions"),
         )
 
     def __str__(self):
@@ -444,6 +483,8 @@ class AfterEffect(models.Model):
     def process(self, session_character):
         if self.go_to_scene:
             session_character.go_to_scene(self.go_to_scene)
+        if self.go_to_moment:
+            session_character.go_to_moment(self.go_to_moment)
 
         if self.hide_block:
             self.hide_block.set_invisible(session_character)
@@ -457,14 +498,6 @@ class AfterEffect(models.Model):
 
         if self.set_property:
             self.set_property.set_value(session_character, self.set_property_value)
-
-        if self.clear_scene_blocks:
-            for block in self.clear_scene_blocks.blocks.all():
-                block.set_invisible(session_character)
-
-        if self.clear_scene_actions:
-            for action in self.clear_scene_actions.actions.all():
-                action.set_invisible(session_character)
 
 
 # Игровая сессия конкретного юзера внутри квеста.
