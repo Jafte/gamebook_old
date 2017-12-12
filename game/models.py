@@ -1,4 +1,5 @@
 import logging
+import json
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
@@ -42,7 +43,7 @@ class Game(models.Model):
     def can_create_new_scene(self):
         return True
 
-    def user_game(self, user):
+    def get_user_game(self, user):
         session, created = Session.objects.get_or_create(
             user=user,
             game=self,
@@ -90,33 +91,20 @@ class Character(models.Model):
             current_scene = start_scene
         )
         session_character.save()
-
-        for property in self.properties.all():
-            session_property = SessionCharacterProperty(
-                character=session_character,
-                property=property,
-                current_value_s=property.value_s,
-                current_value_n=property.value_n,
-            )
-            session_property.save()
-
         return session_character
 
 
-class CharacterProperty(models.Model):
-    TYPE_STRING, TYPE_NUMBER = 'S', 'N'
-    TYPE_CHOICES = (
-        (TYPE_STRING, _('String')),
-        (TYPE_NUMBER, _('Number')),
-    )
+class Property(models.Model):
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    character = models.ForeignKey(to='Character', verbose_name=_('character'), null=True,
+    game = models.ForeignKey(to='Game', verbose_name=_('game'), related_name='characters', on_delete=models.CASCADE)
+    character = models.ForeignKey(to='Character', verbose_name=_('character'), null=True, blank=True,
                                   related_name='properties', on_delete=models.CASCADE)
-    type = models.CharField(max_length=1, choices=TYPE_CHOICES, default=TYPE_NUMBER)
+    scene = models.ForeignKey(to='Scene', verbose_name=_('scene'), null=True, blank=True,
+                                  related_name='properties', on_delete=models.CASCADE)
+
     name = models.CharField(verbose_name=_('name'), max_length=100)
-    value_s = models.CharField(verbose_name=_('value string'), max_length=100, blank=True)
-    value_n = models.FloatField(verbose_name=_('value number'), blank=True)
+    value = models.CharField(verbose_name=_('value'), max_length=100, blank=True)
 
     class Meta:
         ordering = ['character', 'pk']
@@ -124,34 +112,30 @@ class CharacterProperty(models.Model):
     def __str__(self):
         return "%s (%s)" % (self.name, self.type)
 
-    def get_session_data(self, session_character):
-        obj, created = SessionCharacterProperty.objects.get_or_create(
+    def get_session_value(self, session_character):
+        try:
+            query = Q(character__isnull=True)
+            query.add(Q(character=session_character.character), Q.OR)
+            query.add(Q(property=self), Q.AND)
+            query.add(Q(session=session_character.session), Q.AND)
+            
+            session_property = SessionProperty.objects.get(query)
+
+            return session_property.value
+        except SessionProperty.DoesNotExist:
+            return self.value
+
+    def set_value(self, value, session_character=None):
+        session_data, created = SessionProperty.objects.get_or_create(
             property=self,
-            character=session_character
+            Session=session_character.session,
+            defaults={
+                'current_value': value,
+                'character': session_character
+            }
         )
-        if created:
-            obj.current_value_s = self.value_s
-            obj.current_value_n = self.value_n
-            obj.save()
-
-        return obj
-
-    def set_visible(self, session_character):
-        logger.debug("Cant change visibility for CharacterProperty, fire by %s" % session_character)
-
-    def set_invisible(self, session_character):
-        logger.debug("Cant change visibility for CharacterProperty, fire by %s" % session_character)
-
-    def set_value(self, session_character, value):
-        session_data = self.get_session_data(session_character)
-        if self.type == CharacterProperty.TYPE_STRING:
-            session_data.current_value_s = "%s" % value
-        elif self.type == CharacterProperty.TYPE_NUMBER:
-            session_data.current_value_n = "%d" % value
-        else:
-            logger.debug("Not found CharacterProperty type %s" % self.type)
-
-        session_data.save()
+        if not created:
+            session_data.current_value = value
 
 
 class SessionCharacter(models.Model):
@@ -183,9 +167,7 @@ class SessionCharacter(models.Model):
 
         blocks = Block.objects.filter(query)
         for block in blocks:
-            session_data = block.get_session_data(self)
-
-            if session_data.current_is_visible:
+            if block.check_condition(self):
                 result.append(block.content)
 
         return "\n\n".join(result)
@@ -199,8 +181,7 @@ class SessionCharacter(models.Model):
 
         actions = Action.objects.filter(query)
         for action in actions:
-            session_data = action.get_session_data(self)
-            if session_data.current_is_visible:
+            if action.check_condition(self):
                 result.append({'id': action.pk, 'content': action.content})
 
         return result
@@ -208,6 +189,7 @@ class SessionCharacter(models.Model):
     def go_to_scene(self, scene):
         if isinstance(scene, Scene):
             self.current_scene = scene
+            self.current_moment = scene.get_default_moment()
             self.save()
         else:
             logger.debug("Cant go_to_scene %s" % scene)
@@ -222,19 +204,20 @@ class SessionCharacter(models.Model):
             logger.debug("Cant go_to_moment %s" % moment)
 
 
-class SessionCharacterProperty(models.Model):
+class SessionProperty(models.Model):
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    character = models.ForeignKey(to='SessionCharacter', verbose_name=_('character'),
+    session = models.ForeignKey(to='Session', verbose_name=_('session'), related_name='properties',
+                                on_delete=models.CASCADE)
+    character = models.ForeignKey(to='SessionCharacter', verbose_name=_('character'), blank=True, null=True,
                                   related_name='properties', on_delete=models.CASCADE)
-    property = models.ForeignKey(to='CharacterProperty', verbose_name=_('property'),
+    property = models.ForeignKey(to='Property', verbose_name=_('property'),
                                  related_name='in_games', on_delete=models.CASCADE)
-    current_value_s = models.CharField(verbose_name=_('current value string'), max_length=100, blank=True)
-    current_value_n = models.FloatField(verbose_name=_('current value number'), blank=True)
+    current_value = models.CharField(verbose_name=_('current value'), max_length=100, blank=True)
 
     class Meta:
         unique_together = (
-            ("character", "property"),
+            ("session", "property"),
         )
 
     def __str__(self):
@@ -258,14 +241,8 @@ class Scene(models.Model):
     def get_absolute_url(self):
         return reverse('scene_detail', args=(self.game.pk, self.pk, ))
 
-    def set_visible(self, session_character):
-        logger.debug("Cant change visibility for scene, fire by %s" % session_character)
-
-    def set_invisible(self, session_character):
-        logger.debug("Cant change visibility for scene, fire by %s" % session_character)
-
-    def set_value(self, session_character, value):
-        logger.debug("Cant change value for Scene, fire by %s" % session_character)
+    def get_default_moment(self):
+        return self.moments.first()
 
 
 class Moment(models.Model):
@@ -297,7 +274,7 @@ class Block(models.Model):
                               on_delete=models.SET_NULL)
     order = models.SmallIntegerField(verbose_name=_('order'), default=100)
     content = models.TextField(verbose_name=_('content'))
-    is_visible = models.BooleanField(verbose_name=_('is visible?'), default=True)
+    condition = models.TextField(verbose_name=_('condition'))
 
     class Meta:
         ordering = ['game', 'scene', 'order', 'pk']
@@ -305,44 +282,36 @@ class Block(models.Model):
     def __str__(self):
         return "%s: %s" % (self.moment, self.content[:50])
 
-    def get_session_data(self, session_character):
-        obj, created = SessionBlock.objects.get_or_create(
-            block=self,
-            character=session_character
-        )
-        if created:
-            obj.current_is_visible = self.is_visible
-            obj.save()
+    def check_condition(self, session_character):
+        condition_dict = json.loads(self.condition)
+        for condition in condition_dict:
+            property_pk, condition_type, condition_value = condition
+            try:
+                property = Property.objects.get(pk=property_pk)
+                session_value = property.get_session_value(session_character)
+            exept Property.DoesNotExist:
+                return False
+            
+            if condition_type == "==":
+                if session_value == condition_value:
+                    return True
+            elif condition_type == ">=":
+                if session_value >= condition_value:
+                    return True
+            elif condition_type == ">":
+                if session_value > condition_value:
+                    return True
+            elif condition_type == "<=":
+                if session_value <= condition_value:
+                    return True
+            elif condition_type == "<":
+                if session_value < condition_value:
+                    return True
+            elif condition_type == "!=":
+                if session_value != condition_value:
+                    return True
 
-        return obj
-
-    def set_visible(self, session_character):
-        session_data = self.get_session_data(session_character)
-        session_data.current_is_visible = True
-        session_data.save()
-
-    def set_invisible(self, session_character):
-        session_data = self.get_session_data(session_character)
-        session_data.current_is_visible = False
-        session_data.save()
-
-    def set_value(self, session_character, value):
-        logger.debug("Cant change value for Block, fire by %s" % session_character)
-
-
-class SessionBlock(models.Model):
-    created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
-    updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    block = models.ForeignKey(to='Block', verbose_name=_('block'), related_name='sessions_blocks',
-                              on_delete=models.CASCADE)
-    character = models.ForeignKey(to='SessionCharacter', verbose_name=_('character'),
-                                  related_name='sessions_blocks', on_delete=models.CASCADE)
-    current_is_visible = models.BooleanField(verbose_name=_('current is visible?'), default=True)
-
-    class Meta:
-        unique_together = (
-            ("block", "character"),
-        )
+        return False
 
 
 class Action(models.Model):
@@ -356,7 +325,7 @@ class Action(models.Model):
                                on_delete=models.SET_NULL)
     order = models.SmallIntegerField(verbose_name=_('order'), default=100)
     content = models.TextField(verbose_name=_('content'))
-    is_visible = models.BooleanField(verbose_name=_('is visible?'), default=True)
+    condition = models.TextField(verbose_name=_('condition'))
 
     class Meta:
         ordering = ['game', 'scene', 'order', 'pk']
@@ -364,65 +333,44 @@ class Action(models.Model):
     def __str__(self):
         return "%s: %s" % (self.scene, self.content)
 
-    def save(self, *args, **kwargs):
-        self.game = self.scene.game
-        super(Action, self).save(*args, **kwargs)
-
-    def get_session_data(self, session_character):
-        obj, created = SessionAction.objects.get_or_create(
-            action=self,
-            character=session_character
-        )
-        if created:
-            obj.current_is_visible = self.is_visible
-            obj.save()
-
-        return obj
-
-    def set_visible(self, session_character):
-        session_data = self.get_session_data(session_character)
-        session_data.current_is_visible = True
-        session_data.save()
-
-    def set_invisible(self, session_character):
-        session_data = self.get_session_data(session_character)
-        session_data.current_is_visible = False
-        session_data.save()
-
-    def set_value(self, session_character, value):
-        logger.debug("Cant change value for Action, fire by %s" % session_character)
-
-    def check_vision(self, session_character):
-        try:
-            session_data = session_character.sessions_actions.get(action=self)
-            return session_data.current_is_visible
-        except SessionAction.DoesNotExist:
-            return self.is_visible
+    def check_condition(self, session_character):
+        condition_dict = json.loads(self.condition)
+        for condition in condition_dict:
+            property_pk, condition_type, condition_value = condition
+            try:
+                property = Property.objects.get(pk=property_pk)
+                session_value = property.get_session_value(session_character)
+            exept Property.DoesNotExist:
+                return False
+            
+            if condition_type == "==":
+                if session_value == condition_value:
+                    return True
+            elif condition_type == ">=":
+                if session_value >= condition_value:
+                    return True
+            elif condition_type == ">":
+                if session_value > condition_value:
+                    return True
+            elif condition_type == "<=":
+                if session_value <= condition_value:
+                    return True
+            elif condition_type == "<":
+                if session_value < condition_value:
+                    return True
+            elif condition_type == "!=":
+                if session_value != condition_value:
+                    return True
 
         return False
 
     def fire_after_effects(self, session_character):
-        if self.check_vision(session_character):
+        if self.check_condition(session_character):
             logger.debug("Fire action %s for character %s" % (self, session_character))
             for af in self.after_effects.all():
                 af.process(session_character)
         else:
             logger.debug("Try to fire not visible action %s for character %s" % (self, session_character))
-
-
-class SessionAction(models.Model):
-    created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
-    updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    action = models.ForeignKey(to='Action', verbose_name=_('action'), related_name='sessions_actions',
-                               on_delete=models.CASCADE)
-    character = models.ForeignKey(to='SessionCharacter', verbose_name=_('character'),
-                                  related_name='sessions_actions', on_delete=models.CASCADE)
-    current_is_visible = models.BooleanField(verbose_name=_('current is visible?'), default=True)
-
-    class Meta:
-        unique_together = (
-            ("action", "character"),
-        )
 
 
 class AfterEffect(models.Model):
@@ -435,17 +383,7 @@ class AfterEffect(models.Model):
     go_to_moment = models.ForeignKey(to=Moment, related_name='after_effects', on_delete=models.CASCADE, blank=True,
                                     null=True)
 
-    hide_block = models.ForeignKey(to=Block, related_name='hide_after_effects', on_delete=models.CASCADE, blank=True,
-                                   null=True)
-    show_block = models.ForeignKey(to=Block, related_name='show_after_effects', on_delete=models.CASCADE, blank=True,
-                                   null=True)
-
-    hide_action = models.ForeignKey(to=Action, related_name='hide_after_effects', on_delete=models.CASCADE, blank=True,
-                                    null=True)
-    show_action = models.ForeignKey(to=Action, related_name='show_after_effects', on_delete=models.CASCADE, blank=True,
-                                    null=True)
-
-    set_property = models.ForeignKey(to=CharacterProperty, related_name='value_after_effects', on_delete=models.CASCADE,
+    set_property = models.ForeignKey(to=Property, related_name='value_after_effects', on_delete=models.CASCADE,
                                      blank=True, null=True)
     set_property_value = models.TextField(verbose_name=_('after effect action value'), blank=True)
 
@@ -453,10 +391,6 @@ class AfterEffect(models.Model):
         unique_together = (
             ("action", "go_to_scene"),
             ("action", "go_to_moment"),
-            ("action", "hide_block"),
-            ("action", "show_block"),
-            ("action", "hide_action"),
-            ("action", "show_action"),
             ("action", "set_property"),
         )
 
@@ -470,11 +404,6 @@ class AfterEffect(models.Model):
         if self.show_block:
             effects.append('show block %s' % self.show_block)
 
-        if self.hide_action:
-            effects.append('hide action %s' % self.hide_action)
-        if self.show_action:
-            effects.append('show action %s' % self.show_action)
-
         if self.set_property:
             effects.append('set property %s to %s' % (self.set_property, self.set_property_value))
 
@@ -485,16 +414,6 @@ class AfterEffect(models.Model):
             session_character.go_to_scene(self.go_to_scene)
         if self.go_to_moment:
             session_character.go_to_moment(self.go_to_moment)
-
-        if self.hide_block:
-            self.hide_block.set_invisible(session_character)
-        if self.show_block:
-            self.show_block.set_visible(session_character)
-
-        if self.hide_action:
-            self.hide_action.set_invisible(session_character)
-        if self.show_action:
-            self.show_action.set_visible(session_character)
 
         if self.set_property:
             self.set_property.set_value(session_character, self.set_property_value)
