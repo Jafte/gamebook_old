@@ -1,5 +1,6 @@
-import logging
 import json
+import logging
+
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
@@ -21,9 +22,12 @@ class Game(models.Model):
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
     name = models.CharField(verbose_name=_('name'), max_length=250)
     description = models.TextField(verbose_name=_('description'), blank=True)
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=STATUS_DRAFT)
-    author = models.ForeignKey(to=settings.AUTH_USER_MODEL, verbose_name=_('author'),
-                               related_name='created_games', on_delete=models.CASCADE)
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES,
+                              default=STATUS_DRAFT)
+    author = models.ForeignKey(to=settings.AUTH_USER_MODEL,
+                               verbose_name=_('author'),
+                               related_name='created_games',
+                               on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['pk']
@@ -64,11 +68,15 @@ class Game(models.Model):
 class Character(models.Model):
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    game = models.ForeignKey(to='Game', verbose_name=_('game'), related_name='characters', on_delete=models.CASCADE)
+    game = models.ForeignKey(to='Game', verbose_name=_('game'),
+                             related_name='characters',
+                             on_delete=models.CASCADE)
     name = models.CharField(verbose_name=_('name'), max_length=250)
     description = models.TextField(verbose_name=_('description'), blank=True)
-    start_scene = models.ForeignKey(to='Scene', verbose_name=_('start scene'), related_name='scene_start_characters',
-                                    null=True, blank=True, on_delete=models.SET_NULL)
+    start_scene = models.ForeignKey(to='Scene', verbose_name=_('start scene'),
+                                    related_name='scene_start_characters',
+                                    null=True, blank=True,
+                                    on_delete=models.SET_NULL)
 
     class Meta:
         ordering = ['game', 'pk']
@@ -86,9 +94,9 @@ class Character(models.Model):
             start_scene = session.game.scenes.first()
 
         session_character = SessionCharacter(
-            character = self,
-            session = session,
-            current_scene = start_scene
+            character=self,
+            session=session,
+            current_scene=start_scene
         )
         session_character.save()
         return session_character
@@ -97,14 +105,21 @@ class Character(models.Model):
 class Property(models.Model):
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    game = models.ForeignKey(to='Game', verbose_name=_('game'), related_name='characters', on_delete=models.CASCADE)
-    character = models.ForeignKey(to='Character', verbose_name=_('character'), null=True, blank=True,
-                                  related_name='properties', on_delete=models.CASCADE)
-    scene = models.ForeignKey(to='Scene', verbose_name=_('scene'), null=True, blank=True,
-                                  related_name='properties', on_delete=models.CASCADE)
+    game = models.ForeignKey(to='Game', verbose_name=_('game'),
+                             related_name='properties',
+                             on_delete=models.CASCADE)
+    character = models.ForeignKey(to='Character', verbose_name=_('character'),
+                                  null=True, blank=True,
+                                  related_name='properties',
+                                  on_delete=models.CASCADE)
+    scene = models.ForeignKey(to='Scene', verbose_name=_('scene'),
+                              null=True, blank=True,
+                              related_name='properties',
+                              on_delete=models.CASCADE)
 
     name = models.CharField(verbose_name=_('name'), max_length=100)
-    value = models.CharField(verbose_name=_('value'), max_length=100, blank=True)
+    value = models.CharField(verbose_name=_('value'),
+                             max_length=100, blank=True)
 
     class Meta:
         ordering = ['character', 'pk']
@@ -118,7 +133,7 @@ class Property(models.Model):
             query.add(Q(character=session_character.character), Q.OR)
             query.add(Q(property=self), Q.AND)
             query.add(Q(session=session_character.session), Q.AND)
-            
+
             session_property = SessionProperty.objects.get(query)
 
             return session_property.value
@@ -142,12 +157,18 @@ class SessionCharacter(models.Model):
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
     character = models.ForeignKey(to='Character', verbose_name=_('character'),
-                                  related_name='in_games', on_delete=models.CASCADE)
-    current_scene = models.ForeignKey(to='Scene', verbose_name=_('current scene'),
-                                      related_name='scene_characters', on_delete=models.CASCADE)
-    current_moment = models.ForeignKey(to='Moment', verbose_name=_('current moment'),
-                                      related_name='moment_characters', on_delete=models.CASCADE)
-    session = models.ForeignKey(to='Session', verbose_name=_('session'), related_name='characters',
+                                  related_name='in_games',
+                                  on_delete=models.CASCADE)
+    current_scene = models.ForeignKey(to='Scene',
+                                      verbose_name=_('current scene'),
+                                      related_name='scene_characters',
+                                      on_delete=models.CASCADE)
+    current_moment = models.ForeignKey(to='Moment',
+                                       verbose_name=_('current moment'),
+                                       related_name='moment_characters',
+                                       on_delete=models.CASCADE)
+    session = models.ForeignKey(to='Session', verbose_name=_('session'),
+                                related_name='characters',
                                 on_delete=models.CASCADE)
 
     class Meta:
@@ -207,13 +228,19 @@ class SessionCharacter(models.Model):
 class SessionProperty(models.Model):
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    session = models.ForeignKey(to='Session', verbose_name=_('session'), related_name='properties',
+    session = models.ForeignKey(to='Session', verbose_name=_('session'),
+                                related_name='properties',
                                 on_delete=models.CASCADE)
-    character = models.ForeignKey(to='SessionCharacter', verbose_name=_('character'), blank=True, null=True,
-                                  related_name='properties', on_delete=models.CASCADE)
+    character = models.ForeignKey(to='SessionCharacter',
+                                  verbose_name=_('character'),
+                                  blank=True, null=True,
+                                  related_name='properties',
+                                  on_delete=models.CASCADE)
     property = models.ForeignKey(to='Property', verbose_name=_('property'),
-                                 related_name='in_games', on_delete=models.CASCADE)
-    current_value = models.CharField(verbose_name=_('current value'), max_length=100, blank=True)
+                                 related_name='in_games',
+                                 on_delete=models.CASCADE)
+    current_value = models.CharField(verbose_name=_('current value'),
+                                     max_length=100, blank=True)
 
     class Meta:
         unique_together = (
@@ -227,7 +254,8 @@ class SessionProperty(models.Model):
 class Scene(models.Model):
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    game = models.ForeignKey(to='Game', verbose_name=_('game'), related_name='scenes', on_delete=models.CASCADE)
+    game = models.ForeignKey(to='Game', verbose_name=_('game'),
+                             related_name='scenes', on_delete=models.CASCADE)
     name = models.CharField(verbose_name=_('name'), max_length=250)
     order = models.SmallIntegerField(verbose_name=_('order'), default=100)
     description = models.TextField(verbose_name=_('description'), blank=True)
@@ -248,8 +276,10 @@ class Scene(models.Model):
 class Moment(models.Model):
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    game = models.ForeignKey(to='Game', verbose_name=_('game'), related_name='moments', on_delete=models.CASCADE)
-    scene = models.ForeignKey(to='Scene', verbose_name=_('scene'), related_name='moments', on_delete=models.CASCADE)
+    game = models.ForeignKey(to='Game', verbose_name=_('game'),
+                             related_name='moments', on_delete=models.CASCADE)
+    scene = models.ForeignKey(to='Scene', verbose_name=_('scene'),
+                              related_name='moments', on_delete=models.CASCADE)
     name = models.CharField(verbose_name=_('name'), max_length=250)
     order = models.SmallIntegerField(verbose_name=_('order'), default=100)
     description = models.TextField(verbose_name=_('description'), blank=True)
@@ -267,11 +297,14 @@ class Moment(models.Model):
 class Block(models.Model):
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    game = models.ForeignKey(to='Game', verbose_name=_('game'), related_name='blocks', on_delete=models.CASCADE)
-    scene = models.ForeignKey(to='Scene', verbose_name=_('scene'), related_name='blocks', null=True,
+    game = models.ForeignKey(to='Game', verbose_name=_('game'),
+                             related_name='blocks', on_delete=models.CASCADE)
+    scene = models.ForeignKey(to='Scene', verbose_name=_('scene'),
+                              related_name='blocks', null=True,
                               on_delete=models.SET_NULL)
-    moment = models.ForeignKey(to='Moment', verbose_name=_('moment'), related_name='blocks', blank=True, null=True,
-                              on_delete=models.SET_NULL)
+    moment = models.ForeignKey(to='Moment', verbose_name=_('moment'),
+                               related_name='blocks', blank=True, null=True,
+                               on_delete=models.SET_NULL)
     order = models.SmallIntegerField(verbose_name=_('order'), default=100)
     content = models.TextField(verbose_name=_('content'))
     condition = models.TextField(verbose_name=_('condition'))
@@ -289,9 +322,9 @@ class Block(models.Model):
             try:
                 property = Property.objects.get(pk=property_pk)
                 session_value = property.get_session_value(session_character)
-            exept Property.DoesNotExist:
+            except Property.DoesNotExist:
                 return False
-            
+
             if condition_type == "==":
                 if session_value == condition_value:
                     return True
@@ -317,11 +350,14 @@ class Block(models.Model):
 class Action(models.Model):
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    game = models.ForeignKey(to=Game, verbose_name=_('game'), related_name='actions', on_delete=models.CASCADE,
+    game = models.ForeignKey(to=Game, verbose_name=_('game'),
+                             related_name='actions', on_delete=models.CASCADE,
                              editable=False)
-    scene = models.ForeignKey(to=Scene, verbose_name=_('scene'), related_name='actions', null=True,
+    scene = models.ForeignKey(to=Scene, verbose_name=_('scene'),
+                              related_name='actions', null=True,
                               on_delete=models.SET_NULL)
-    moment = models.ForeignKey(to='Moment', verbose_name=_('moment'), related_name='actions', blank=True, null=True,
+    moment = models.ForeignKey(to='Moment', verbose_name=_('moment'),
+                               related_name='actions', blank=True, null=True,
                                on_delete=models.SET_NULL)
     order = models.SmallIntegerField(verbose_name=_('order'), default=100)
     content = models.TextField(verbose_name=_('content'))
@@ -340,9 +376,9 @@ class Action(models.Model):
             try:
                 property = Property.objects.get(pk=property_pk)
                 session_value = property.get_session_value(session_character)
-            exept Property.DoesNotExist:
+            except Property.DoesNotExist:
                 return False
-            
+
             if condition_type == "==":
                 if session_value == condition_value:
                     return True
@@ -366,26 +402,39 @@ class Action(models.Model):
 
     def fire_after_effects(self, session_character):
         if self.check_condition(session_character):
-            logger.debug("Fire action %s for character %s" % (self, session_character))
+            logger.debug(
+                "Fire action %s for character %s" %
+                (self, session_character)
+            )
             for af in self.after_effects.all():
                 af.process(session_character)
         else:
-            logger.debug("Try to fire not visible action %s for character %s" % (self, session_character))
+            logger.debug(
+                "Try to fire not visible action %s for character %s" %
+                (self, session_character)
+            )
 
 
 class AfterEffect(models.Model):
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    action = models.ForeignKey(to=Action, related_name='after_effects', on_delete=models.CASCADE)
+    action = models.ForeignKey(to=Action, related_name='after_effects',
+                               on_delete=models.CASCADE)
 
-    go_to_scene = models.ForeignKey(to=Scene, related_name='after_effects', on_delete=models.CASCADE, blank=True,
+    go_to_scene = models.ForeignKey(to=Scene, related_name='after_effects',
+                                    on_delete=models.CASCADE, blank=True,
                                     null=True)
-    go_to_moment = models.ForeignKey(to=Moment, related_name='after_effects', on_delete=models.CASCADE, blank=True,
-                                    null=True)
+    go_to_moment = models.ForeignKey(to=Moment, related_name='after_effects',
+                                     on_delete=models.CASCADE, blank=True,
+                                     null=True)
 
-    set_property = models.ForeignKey(to=Property, related_name='value_after_effects', on_delete=models.CASCADE,
+    set_property = models.ForeignKey(to=Property,
+                                     related_name='value_after_effects',
+                                     on_delete=models.CASCADE,
                                      blank=True, null=True)
-    set_property_value = models.TextField(verbose_name=_('after effect action value'), blank=True)
+    set_property_value = models.TextField(
+        verbose_name=_('after effect action value'), blank=True
+    )
 
     class Meta:
         unique_together = (
@@ -405,7 +454,10 @@ class AfterEffect(models.Model):
             effects.append('show block %s' % self.show_block)
 
         if self.set_property:
-            effects.append('set property %s to %s' % (self.set_property, self.set_property_value))
+            effects.append(
+                'set property %s to %s' %
+                (self.set_property, self.set_property_value)
+            )
 
         return "%s: %s" % (self.action, ", ".join(effects))
 
@@ -416,11 +468,15 @@ class AfterEffect(models.Model):
             session_character.go_to_moment(self.go_to_moment)
 
         if self.set_property:
-            self.set_property.set_value(session_character, self.set_property_value)
+            self.set_property.set_value(
+                session_character,
+                self.set_property_value
+            )
 
 
 # Игровая сессия конкретного юзера внутри квеста.
-# может быть несколько, так как он может несколько раз играть в один и тот же квест
+# может быть несколько, так как он может
+# несколько раз играть в один и тот же квест
 class Session(models.Model):
     STATUS_ACTIVE, STATUS_FINISHED = 'a', 'f'
     STATUS_CHOICES = (
@@ -430,12 +486,16 @@ class Session(models.Model):
 
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    game = models.ForeignKey(to='Game', verbose_name=_('game'), related_name='users_sessions', on_delete=models.CASCADE)
+    game = models.ForeignKey(to='Game', verbose_name=_('game'),
+                             related_name='users_sessions',
+                             on_delete=models.CASCADE)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES)
     user = models.ForeignKey(to='telegrambot.User', verbose_name=_('user'),
-                             related_name='games_sessions', on_delete=models.CASCADE)
+                             related_name='games_sessions',
+                             on_delete=models.CASCADE)
 
-    active_character = models.ForeignKey(to='SessionCharacter', verbose_name=_('active character'),
+    active_character = models.ForeignKey(to='SessionCharacter',
+                                         verbose_name=_('active character'),
                                          related_name='active_sessions',
                                          null=True, on_delete=models.SET_NULL)
 
@@ -443,21 +503,32 @@ class Session(models.Model):
         return "%s in %s" % (self.user, self.game)
 
     def get_game_data(self):
-        logger.debug("Get game data for session %s with active active_character %s" % (self, self.active_character))
+        logger.debug(
+            "Get game data for session %s with active active_character %s" %
+            (self, self.active_character)
+        )
         return {
             'vision': self.active_character.get_scene_vision(),
             'actions': self.active_character.get_scene_actions(),
         }
 
     def fire_action(self, action_pk):
-        logger.debug("Fire some action for session %s with active active_character %s" % (self, self.active_character))
+        logger.debug(
+            "Fire some action for session %s with active active_character %s" %
+            (self, self.active_character)
+        )
 
         try:
-            action = self.active_character.current_scene.actions.get(pk=action_pk)
+            action = self.active_character.current_scene.actions.get(
+                pk=action_pk
+            )
             action.fire_after_effects(self.active_character)
             return action
         except Action.DoesNotExist:
-            logger.debug("Not found action with pk %s in scene %S" % (action_pk, self.active_character.current_scene))
+            logger.debug(
+                "Not found action with pk %s in scene %S" %
+                (action_pk, self.active_character.current_scene)
+            )
 
         return False
 
@@ -473,11 +544,14 @@ class Gamelog(models.Model):
         (SOURCE_GAME, _('game')),
     )
 
-    session = models.ForeignKey(to='Session', verbose_name=_('session'), related_name='gamelogs',
+    session = models.ForeignKey(to='Session', verbose_name=_('session'),
+                                related_name='gamelogs',
                                 on_delete=models.CASCADE)
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
-    source = models.CharField(max_length=1, choices=SOURCE_CHOICES, default=SOURCE_GAME)
+    source = models.CharField(max_length=1,
+                              choices=SOURCE_CHOICES,
+                              default=SOURCE_GAME)
     text = models.TextField(verbose_name=_('text'))
 
     class Meta:

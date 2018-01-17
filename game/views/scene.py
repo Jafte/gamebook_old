@@ -1,7 +1,8 @@
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from game.models import Scene
-from game.views.base import DeleteWithGameView, DetailWithGameView, CreateWithGameView, UpdateWithGameView
+from game.views.base import DeleteWithGameView, DetailWithGameView, \
+                        CreateWithGameView, UpdateWithGameView
 
 
 class SceneDetailView(LoginRequiredMixin, DetailWithGameView):

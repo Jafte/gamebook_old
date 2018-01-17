@@ -1,5 +1,5 @@
 from django.contrib import admin
-from game.models import Gamelog, Game, Character, CharacterProperty, SessionCharacter
+from game.models import Gamelog, Game, Character, SessionCharacter
 
 
 @admin.register(Gamelog)
@@ -15,11 +15,6 @@ class GameAdmin(admin.ModelAdmin):
 @admin.register(Character)
 class CharacterAdmin(admin.ModelAdmin):
     list_display = ('name', 'game', 'start_scene', 'created_at')
-
-
-@admin.register(CharacterProperty)
-class CharacterPropertyAdmin(admin.ModelAdmin):
-    list_display = ('character', 'type', 'name', 'created_at')
 
 
 @admin.register(SessionCharacter)
