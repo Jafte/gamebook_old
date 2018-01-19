@@ -64,6 +64,26 @@ urlpatterns = [
         SceneDeleteView.as_view(), name="scene_delete"
     ),
 
+    """
+    # Moment
+    path(
+        'g<int:game_pk>/s<int:scene_pk>/create-moment/',
+        SceneDetailView.as_view(), name="moment_create"
+    ),
+    path(
+        'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/',
+        SceneDetailView.as_view(), name="moment_detail"
+    ),
+    path(
+        'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/edit/',
+        SceneDetailView.as_view(), name="moment_update"
+    ),
+    path(
+        'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/delete/',
+        SceneDetailView.as_view(), name="moment_delete"
+    ),
+    """
+
     # Scene Block
 #    path('g<int:game_pk>/s<int:scene_pk>/create-block/', SceneCreateView.as_view(), name="scene_block_create"),
 #    path('g<int:game_pk>/s<int:scene_pk>/b<int:block_pk>/', SceneDetailView.as_view(), name="scene_block_detail"),
