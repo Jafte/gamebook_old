@@ -22,40 +22,27 @@
                                     {{ game.name }}
                                 </a>
                             </h3>
+                            <p>
+                                created at: {{ game.created_at }}, status: {{ game.get_status_display }}
+                            </p>
+                            <p>
+                                {% if game.status == game.STATUS_DRAFT %}
+                                <a class="uk-button uk-button-mini uk-button-success" href="#">
+                                    publish
+                                </a>
+                                {% else %}
+                                <a class="uk-button uk-button-mini uk-button-danger" href="#">
+                                    unpublish
+                                </a>
+                                {% endif %}
+                                <a class="uk-button uk-button-mini uk-button-primary" href="{% url 'game_update' game.pk %}">
+                                    update
+                                </a>
+                                <a class="uk-button uk-button-mini uk-button-danger" href="{% url 'game_delete'  game.pk %}">
+                                    delete
+                                </a>
+                            </p>
                             <p>{{ game.description }}</p>
-                        </div>
-                        <div class="uk-width-1-2">
-                            <ul class="uk-list">
-                                <li>
-                                    created at:
-                                    {{ game.created_at }}
-                                </li>
-                                <li>
-                                    updated at:
-                                    {{ game.updated_at }}
-                                </li>
-                                <li>
-                                    status:
-                                    {{ game.get_status_display }}
-                                </li>
-                                <li>
-                                    {% if game.status == game.STATUS_DRAFT %}
-                                    <a class="uk-button uk-button-mini uk-button-success" href="#">
-                                        publish
-                                    </a>
-                                    {% else %}
-                                    <a class="uk-button uk-button-mini uk-button-danger" href="#">
-                                        unpublish
-                                    </a>
-                                    {% endif %}
-                                    <a class="uk-button uk-button-mini uk-button-primary" href="{% url 'game_update' game.pk %}">
-                                        update
-                                    </a>
-                                    <a class="uk-button uk-button-mini uk-button-danger" href="{% url 'game_delete'  game.pk %}">
-                                        delete
-                                    </a>
-                                </li>
-                            </ul>
                         </div>
                     </div>
                     {% if not forloop.last %}
