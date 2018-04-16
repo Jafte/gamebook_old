@@ -1,17 +1,16 @@
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from game.models import Character
-from game.views.base import DeleteWithGameView, DetailWithGameView, \
-                        CreateWithGameView, UpdateWithGameView
+from game.views import base
 
 
-class CharacterDetailView(LoginRequiredMixin, DetailWithGameView):
+class CharacterDetailView(LoginRequiredMixin, base.DetailWithGameView):
     template_name = 'game/charatcer/detail.html'
     model = Character
     pk_url_kwarg = 'character_pk'
 
 
-class CharacterCreateView(LoginRequiredMixin, CreateWithGameView):
+class CharacterCreateView(LoginRequiredMixin, base.CreateWithGameView):
     template_name = 'game/charatcer/form.html'
     model = Character
     fields = ['name', 'description']
@@ -26,14 +25,14 @@ class CharacterCreateView(LoginRequiredMixin, CreateWithGameView):
             return redirect(self.game.get_absolute_url())
 
 
-class CharacterUpdateView(LoginRequiredMixin, UpdateWithGameView):
+class CharacterUpdateView(LoginRequiredMixin, base.UpdateWithGameView):
     template_name = 'game/charatcer/form.html'
     model = Character
     pk_url_kwarg = 'character_pk'
     fields = ['name', 'description']
 
 
-class CharacterDeleteView(LoginRequiredMixin, DeleteWithGameView):
+class CharacterDeleteView(LoginRequiredMixin, base.DeleteWithGameView):
     template_name = 'game/charatcer/delete.html'
     model = Character
     pk_url_kwarg = 'character_pk'

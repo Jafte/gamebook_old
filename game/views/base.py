@@ -29,8 +29,10 @@ class GameMixin(ContextMixin):
                 # Get the single item from the filtered queryset
                 self.game = queryset.get()
             except queryset.model.DoesNotExist:
-                raise Http404(_("No %(verbose_name)s found matching the query") %
-                            {'verbose_name': queryset.model._meta.verbose_name})
+                raise Http404(
+                    _("No %(verbose_name)s found matching the query") %
+                    {'verbose_name': queryset.model._meta.verbose_name}
+                )
 
         return self.game
 
@@ -65,7 +67,7 @@ class UpdateWithGameView(GameMixin, UpdateView):
         return super().post(request, *args, **kwargs)
 
 
-class SceneGameMixin(GameMixin):
+class SceneMixin(GameMixin):
     scene_pk_url_kwarg = 'scene_pk'
     scene = None
 
@@ -77,7 +79,7 @@ class SceneGameMixin(GameMixin):
         return super().get_context_data(**context)
 
     def get_scene(self):
-        if not self.scene
+        if not self.scene:
             queryset = Scene.objects.filter(game=self.get_game())
 
             pk = self.kwargs.get(self.game_pk_url_kwarg, None)
@@ -86,43 +88,40 @@ class SceneGameMixin(GameMixin):
             try:
                 self.scene = queryset.get()
             except queryset.model.DoesNotExist:
-                raise Http404(_("No %(verbose_name)s found matching the query") %
-                            {'verbose_name': queryset.model._meta.verbose_name})
+                raise Http404(
+                    _("No %(verbose_name)s found matching the query") %
+                    {'verbose_name': queryset.model._meta.verbose_name}
+                )
         return self.scene
 
 
-class DetailWithGameView(GameMixin, DetailView):
+class DetailWithSceneView(SceneMixin, DetailView):
     def get(self, request, *args, **kwargs):
-        self.game = self.get_game()
         return super().get(request, *args, **kwargs)
 
 
-class DeleteWithGameView(DetailWithGameView, DeleteView):
+class DeleteWithSceneView(DetailWithSceneView, DeleteView):
     def get_success_url(self):
-        return self.game.get_absolute_url()
+        scene = self.get_scene()
+        return scene.get_absolute_url()
 
     def post(self, request, *args, **kwargs):
-        self.game = self.get_game()
         return super().post(request, *args, **kwargs)
 
 
-class CreateWithGameView(GameMixin, CreateView):
+class CreateWithSceneView(SceneMixin, CreateView):
     def get(self, request, *args, **kwargs):
-        self.game = self.get_game()
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self.game = self.get_game()
         return super().post(request, *args, **kwargs)
 
 
-class UpdateWithGameView(GameMixin, UpdateView):
+class UpdateWithSceneView(SceneMixin, UpdateView):
     def get(self, request, *args, **kwargs):
-        self.game = self.get_game()
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self.game = self.get_game()
         return super().post(request, *args, **kwargs)
 
 

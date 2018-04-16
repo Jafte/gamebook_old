@@ -28,7 +28,9 @@ class GamePlayView(GameDetailView):
 
     def get_context_data(self, **kwargs):
         context = {
-            'session': self.object.user_game(User.objects.get(pk=settings.BOT_USER_ID))
+            'session': self.object.user_game(
+                User.objects.get(pk=settings.BOT_USER_ID)
+            )
         }
         context.update(kwargs)
         return super().get_context_data(**context)
@@ -38,7 +40,9 @@ class GamePlayView(GameDetailView):
 
         action = self.request.POST.get('action', False)
         if action == 'new_game':
-            session = self.object.user_game(User.objects.get(pk=settings.BOT_USER_ID))
+            session = self.object.user_game(
+                User.objects.get(pk=settings.BOT_USER_ID)
+            )
             session.finish_game()
 
         context = self.get_context_data(object=self.object)

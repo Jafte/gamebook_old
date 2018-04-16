@@ -1,39 +1,36 @@
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from game.models import Moment
-from game.views.base import DeleteWithGameView, DetailWithGameView, \
-                        CreateWithGameView, UpdateWithGameView
+from game.views import base
 
 
-class MomentDetailView(LoginRequiredMixin, DetailWithGameView):
+class MomentDetailView(LoginRequiredMixin, base.DetailWithSceneView):
     template_name = 'game/moment/detail.html'
     model = Moment
     pk_url_kwarg = 'moment_pk'
 
 
-class MomentCreateView(LoginRequiredMixin, CreateWithGameView):
+class MomentCreateView(LoginRequiredMixin, base.CreateWithSceneView):
     template_name = 'game/moment/form.html'
     model = Moment
     fields = ['name', 'description', 'order']
 
     def form_valid(self, form):
-        if self.game.can_create_new_scene():
-            self.object = form.save(commit=False)
-            self.object.game = self.game
-            self.object.save()
-            return super().form_valid(form)
-        else:
-            return redirect(self.game.get_absolute_url())
+        self.object = form.save(commit=False)
+        self.object.game = self.game
+        self.object.scene = self.scene
+        self.object.save()
+        return super().form_valid(form)
 
 
-class MomentUpdateView(LoginRequiredMixin, UpdateWithGameView):
+class MomentUpdateView(LoginRequiredMixin, base.UpdateWithSceneView):
     template_name = 'game/scene/form.html'
     model = Moment
     pk_url_kwarg = 'moment_pk'
     fields = ['name', 'description', 'order']
 
 
-class MomentDeleteView(LoginRequiredMixin, DeleteWithGameView):
+class MomentDeleteView(LoginRequiredMixin, base.DeleteWithSceneView):
     template_name = 'game/scene/delete.html'
     model = Moment
     pk_url_kwarg = 'moment_pk'

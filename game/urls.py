@@ -1,88 +1,87 @@
 from django.urls import path
-from game.views.game import GameListView, GameCreateView, GameDetailView, GameUpdateView, GameDeleteView, GamePlayView
-from game.views.charatcer import CharacterCreateView, CharacterDetailView, CharacterUpdateView, CharacterDeleteView
-from game.views.scene import SceneCreateView, SceneDetailView, SceneUpdateView, SceneDeleteView
+from game.views import game, charatcer, scene, moment
 
 urlpatterns = [
     # Game
-    path('', GameListView.as_view(), name="game_list"),
+    path(
+        '',
+        game.GameListView.as_view(), name="game_list"
+    ),
 
     path(
         'create/',
-        GameCreateView.as_view(), name="game_create"
+        game.GameCreateView.as_view(), name="game_create"
     ),
     path(
         'g<int:game_pk>/',
-        GameDetailView.as_view(), name="game_detail"
+        game.GameDetailView.as_view(), name="game_detail"
     ),
     path(
         'g<int:game_pk>/edit/',
-        GameUpdateView.as_view(), name="game_update"
+        game.GameUpdateView.as_view(), name="game_update"
     ),
     path(
         'g<int:game_pk>/delete/',
-        GameDeleteView.as_view(), name="game_delete"
+        game.GameDeleteView.as_view(), name="game_delete"
     ),
     path(
         'g<int:game_pk>/play/',
-        GamePlayView.as_view(), name="game_play"
+        game.GamePlayView.as_view(), name="game_play"
     ),
 
     # Character
     path(
         'g<int:game_pk>/create-character/',
-        CharacterCreateView.as_view(), name="character_create"
+        charatcer.CharacterCreateView.as_view(), name="character_create"
     ),
     path(
         'g<int:game_pk>/ch<int:character_pk>/',
-        CharacterDetailView.as_view(), name="character_detail"
+        charatcer.CharacterDetailView.as_view(), name="character_detail"
     ),
     path(
         'g<int:game_pk>/ch<int:character_pk>/edit/',
-        CharacterUpdateView.as_view(), name="character_update"
+        charatcer.CharacterUpdateView.as_view(), name="character_update"
     ),
     path(
         'g<int:game_pk>/ch<int:character_pk>/delete/',
-        CharacterDeleteView.as_view(), name="character_delete"
+        charatcer.CharacterDeleteView.as_view(), name="character_delete"
     ),
 
     # Scene
     path(
         'g<int:game_pk>/create-scene/',
-        SceneCreateView.as_view(), name="scene_create"
+        scene.SceneCreateView.as_view(), name="scene_create"
     ),
     path(
         'g<int:game_pk>/s<int:scene_pk>/',
-        SceneDetailView.as_view(), name="scene_detail"
+        scene.SceneDetailView.as_view(), name="scene_detail"
     ),
     path(
         'g<int:game_pk>/s<int:scene_pk>/edit/',
-        SceneUpdateView.as_view(), name="scene_update"
+        scene.SceneUpdateView.as_view(), name="scene_update"
     ),
     path(
         'g<int:game_pk>/s<int:scene_pk>/delete/',
-        SceneDeleteView.as_view(), name="scene_delete"
+        scene.SceneDeleteView.as_view(), name="scene_delete"
     ),
 
-    """
     # Moment
     path(
         'g<int:game_pk>/s<int:scene_pk>/create-moment/',
-        SceneDetailView.as_view(), name="moment_create"
+        moment.MomentDetailView.as_view(), name="moment_create"
     ),
     path(
         'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/',
-        SceneDetailView.as_view(), name="moment_detail"
+        moment.MomentDetailView.as_view(), name="moment_detail"
     ),
     path(
         'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/edit/',
-        SceneDetailView.as_view(), name="moment_update"
+        moment.MomentDetailView.as_view(), name="moment_update"
     ),
     path(
         'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/delete/',
-        SceneDetailView.as_view(), name="moment_delete"
+        moment.MomentDetailView.as_view(), name="moment_delete"
     ),
-    """
 
     # Scene Block
 #    path('g<int:game_pk>/s<int:scene_pk>/create-block/', SceneCreateView.as_view(), name="scene_block_create"),
