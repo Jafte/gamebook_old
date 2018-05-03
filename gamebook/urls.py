@@ -34,7 +34,9 @@ urlpatterns = [
 if settings.DEBUG:
     from django.contrib.staticfiles import views
     from django.urls import re_path
+    import debug_toolbar
 
-    urlpatterns += [
+    urlpatterns = [
         re_path(r'^static/(?P<path>.*)$', views.serve),
-    ]
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
