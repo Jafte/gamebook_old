@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 
     'telegrambot',
     'game',
+    'play',
 
     'allauth',
     'allauth.account',
