@@ -351,10 +351,8 @@ class AfterEffect(models.Model):
         if self.go_to_scene:
             effects.append('go to scene %s' % self.go_to_scene)
 
-        if self.hide_block:
-            effects.append('hide block %s' % self.hide_block)
-        if self.show_block:
-            effects.append('show block %s' % self.show_block)
+        if self.go_to_moment:
+            effects.append('go to moment %s' % self.go_to_moment)
 
         if self.set_property:
             effects.append(
