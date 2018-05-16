@@ -24,13 +24,13 @@ class MomentCreateView(LoginRequiredMixin, base.CreateWithSceneView):
 
 
 class MomentUpdateView(LoginRequiredMixin, base.UpdateWithSceneView):
-    template_name = 'game/scene/form.html'
+    template_name = 'game/moment/form.html'
     model = Moment
     pk_url_kwarg = 'moment_pk'
     fields = ['name', 'description', 'order']
 
 
 class MomentDeleteView(LoginRequiredMixin, base.DeleteWithSceneView):
-    template_name = 'game/scene/delete.html'
+    template_name = 'game/moment/delete.html'
     model = Moment
     pk_url_kwarg = 'moment_pk'

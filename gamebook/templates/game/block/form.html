@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block head_title %}{% if object %}Edit{% else %}Crete{% endif %} block in moment "{{ moment.name }}" on scene "{{ scene.name }}" for game "{{ game.name }}"{% endblock %}
+
+{% block content %}
+    <ul class="uk-breadcrumb">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'game_list' %}">Games</a></li>
+        <li><a href="{{ game.get_absolute_url }}">{{ game.name }}</a></li>
+        <li><a href="{{ scene.get_absolute_url }}">{{ scene.name }}</a></li>
+        <li><a href="{{ moment.get_absolute_url }}">{{ moment.name }}</a></li>
+        {% if object %}
+        <li><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></li>
+        {% endif %}
+        <li class="uk-active"><span>{% if object %}Edit{% else %}Crete{% endif %} block</span></li>
+    </ul>
+    <h1>
+        {% if object %}Edit{% else %}Crete{% endif %} block in moment "{{ moment.name }}" on scene "{{ scene.name }}" for game "{{ game.name }}"
+    </h1>
+    <form class="uk-form" action="" method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <button class="uk-button-success uk-button">{% if object %}update{% else %}crete{% endif %}</button>
+    </form>
+{% endblock %}

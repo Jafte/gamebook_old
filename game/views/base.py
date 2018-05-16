@@ -4,12 +4,20 @@ from django.views.generic import TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.base import ContextMixin
-from game.models import Game, Scene
+from game.models import Game, Scene, Moment
+
+
+class IndexView(TemplateView):
+    template_name = 'index.html'
 
 
 class GameMixin(ContextMixin):
     game_pk_url_kwarg = 'game_pk'
     game = None
+
+    def dispatch(self, request, *args, **kwargs):
+        self.game = self.get_game()
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = {
@@ -38,38 +46,29 @@ class GameMixin(ContextMixin):
 
 
 class DetailWithGameView(GameMixin, DetailView):
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+    pass
 
 
 class DeleteWithGameView(DetailWithGameView, DeleteView):
     def get_success_url(self):
-        game = self.get_game()
-        return game.get_absolute_url()
-
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+        return self.game.get_absolute_url()
 
 
 class CreateWithGameView(GameMixin, CreateView):
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+    pass
 
 
 class UpdateWithGameView(GameMixin, UpdateView):
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+    pass
 
 
 class SceneMixin(GameMixin):
     scene_pk_url_kwarg = 'scene_pk'
     scene = None
+
+    def dispatch(self, request, *args, **kwargs):
+        self.scene = self.get_scene()
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = {
@@ -96,34 +95,66 @@ class SceneMixin(GameMixin):
 
 
 class DetailWithSceneView(SceneMixin, DetailView):
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+    pass
 
 
 class DeleteWithSceneView(DetailWithSceneView, DeleteView):
     def get_success_url(self):
-        scene = self.get_scene()
-        return scene.get_absolute_url()
-
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+        return self.scene.get_absolute_url()
 
 
 class CreateWithSceneView(SceneMixin, CreateView):
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+    pass
 
 
 class UpdateWithSceneView(SceneMixin, UpdateView):
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+    pass
 
 
-class IndexView(TemplateView):
-    template_name = 'index.html'
+class MomentMixin(SceneMixin):
+    moment_pk_url_kwarg = 'moment_pk'
+    moment = None
+
+    def dispatch(self, request, *args, **kwargs):
+        self.moment = self.get_moment()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = {
+            'moment': self.get_moment()
+        }
+        context.update(kwargs)
+        return super().get_context_data(**context)
+
+    def get_moment(self):
+        if not self.moment:
+            queryset = Moment.objects.filter(game=self.get_game(), scene=self.get_scene())
+
+            pk = self.kwargs.get(self.moment_pk_url_kwarg, None)
+            queryset = queryset.filter(pk=pk)
+
+            try:
+                self.block = queryset.get()
+            except queryset.model.DoesNotExist:
+                raise Http404(
+                    _("No %(verbose_name)s found matching the query") %
+                    {'verbose_name': queryset.model._meta.verbose_name}
+                )
+        return self.block
+
+
+class DetailWithMomentView(MomentMixin, DetailView):
+    pass
+
+
+class DeleteWithMomentView(DetailWithMomentView, DeleteView):
+    def get_success_url(self):
+        return self.moment.get_absolute_url()
+
+
+class CreateWithMomentView(MomentMixin, CreateView):
+    pass
+
+
+class UpdateWithMomentView(MomentMixin, UpdateView):
+    pass

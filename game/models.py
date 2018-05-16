@@ -194,7 +194,7 @@ class Moment(models.Model):
         return "%s: %s" % (self.scene, self.name)
 
     def get_absolute_url(self):
-        pass
+        return reverse('moment_detail', args=(self.game.pk, self.scene.pk, self.pk, ))
 
 
 class Block(models.Model):

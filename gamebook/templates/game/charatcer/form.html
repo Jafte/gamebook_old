@@ -15,7 +15,7 @@
     <h1>
         {% if object %}Edit{% else %}Crete{% endif %} character for game "{{ game.name }}"
     </h1>
-    {% if game.can_create_new_character %}
+    {% if object or game.can_create_new_character %}
         <form class="uk-form" action="" method="post">{% csrf_token %}
             {{ form.as_p }}
             <button class="uk-button-success uk-button">{% if object %}update{% else %}crete{% endif %}</button>

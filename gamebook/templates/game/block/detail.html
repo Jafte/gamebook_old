@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block head_title %}{{ object.name }} in game "{{ object.game.name }}"{% endblock %}
+
+{% block content %}
+    <ul class="uk-breadcrumb">
+        <li><a href="/">Home</a></li>
+        <li><a href="{% url 'game_list' %}">Games</a></li>
+        <li><a href="{{ object.game.get_absolute_url }}">{{ object.game.name }}</a></li>
+        <li><a href="{{ object.scene.get_absolute_url }}">{{ object.scene.name }}</a></li>
+        <li class="uk-active"><span>{{ object.name }}</span></li>
+    </ul>
+    <h1>{{ object.name }}</h1>
+    <p>
+        {{ object.description }}
+    </p>
+    <div class="properties-list">
+        <h3>Blocks</h3>
+        {% for blck in object.blocks.all %}
+        <div class="properties-list-item uk-grid">
+            {{ blck }}
+        </div>
+        {% empty %}
+            <p>
+                <b>No Blocks :(</b>
+            </p>
+        {% endfor %}
+        <div class="properties-list-item uk-margin-top">
+            <a href="{% url 'block_create' object.game.pk object.scene.pk object.pk %}" class="uk-button">
+                create block
+            </a>
+        </div>
+    </div>
+{% endblock %}

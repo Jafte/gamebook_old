@@ -1,5 +1,5 @@
 from django.urls import path
-from game.views import game, charatcer, scene, moment
+from game.views import game, charatcer, scene, moment, block
 
 urlpatterns = [
     # Game
@@ -68,7 +68,7 @@ urlpatterns = [
     # Moment
     path(
         'g<int:game_pk>/s<int:scene_pk>/create-moment/',
-        moment.MomentDetailView.as_view(), name="moment_create"
+        moment.MomentCreateView.as_view(), name="moment_create"
     ),
     path(
         'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/',
@@ -76,18 +76,30 @@ urlpatterns = [
     ),
     path(
         'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/edit/',
-        moment.MomentDetailView.as_view(), name="moment_update"
+        moment.MomentUpdateView.as_view(), name="moment_update"
     ),
     path(
         'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/delete/',
-        moment.MomentDetailView.as_view(), name="moment_delete"
+        moment.MomentDeleteView.as_view(), name="moment_delete"
     ),
 
     # Scene Block
-#    path('g<int:game_pk>/s<int:scene_pk>/create-block/', SceneCreateView.as_view(), name="scene_block_create"),
-#    path('g<int:game_pk>/s<int:scene_pk>/b<int:block_pk>/', SceneDetailView.as_view(), name="scene_block_detail"),
-#    path('g<int:game_pk>/s<int:scene_pk>/b<int:block_pk>/edit/', SceneUpdateView.as_view(), name="scene_block_update"),
-#    path('g<int:game_pk>/s<int:scene_pk>/b<int:block_pk>/delete/', SceneDeleteView.as_view(), name="scene_block_delete"),
+    path(
+        'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/create-block/',
+        block.BlockCreateView.as_view(), name="block_create"
+    ),
+    path(
+        'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/b<int:block_pk>/',
+        block.BlockDetailView.as_view(), name="block_detail"
+    ),
+    path(
+        'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/b<int:block_pk>/edit/',
+        block.BlockUpdateView.as_view(), name="block_update"
+    ),
+    path(
+        'g<int:game_pk>/s<int:scene_pk>/b<int:block_pk>/delete/',
+        block.BlockDeleteView.as_view(), name="block_delete"
+    ),
 
     # Scene Action
 #    path('g<int:game_pk>/s<int:scene_pk>/create-action/', SceneCreateView.as_view(), name="scene_action_create"),
