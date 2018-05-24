@@ -1,18 +1,18 @@
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
-from game.models import Block
+from game.models import Action
 from game.views import base
 
 
-class BlockDetailView(LoginRequiredMixin, base.DetailWithMomentView):
-    template_name = 'game/block/detail.html'
-    model = Block
-    pk_url_kwarg = 'block_pk'
+class ActionDetailView(LoginRequiredMixin, base.DetailWithMomentView):
+    template_name = 'game/action/detail.html'
+    model = Action
+    pk_url_kwarg = 'action_pk'
 
 
-class BlockCreateView(LoginRequiredMixin, base.CreateWithMomentView):
-    template_name = 'game/block/form.html'
-    model = Block
+class ActionCreateView(LoginRequiredMixin, base.CreateWithMomentView):
+    template_name = 'game/action/form.html'
+    model = Action
     fields = ['content', 'condition', 'order']
 
     def form_valid(self, form):
@@ -28,20 +28,20 @@ class BlockCreateView(LoginRequiredMixin, base.CreateWithMomentView):
         return self.moment.get_absolute_url()
 
 
-class BlockUpdateView(LoginRequiredMixin, base.UpdateWithMomentView):
-    template_name = 'game/block/form.html'
-    model = Block
-    pk_url_kwarg = 'block_pk'
+class ActionUpdateView(LoginRequiredMixin, base.UpdateWithMomentView):
+    template_name = 'game/action/form.html'
+    model = Action
+    pk_url_kwarg = 'action_pk'
     fields = ['content', 'condition', 'order']
 
     def get_success_url(self):
         return self.moment.get_absolute_url()
 
 
-class BlockDeleteView(LoginRequiredMixin, base.DeleteWithMomentView):
-    template_name = 'game/block/delete.html'
-    model = Block
-    pk_url_kwarg = 'block_pk'
+class ActionDeleteView(LoginRequiredMixin, base.DeleteWithMomentView):
+    template_name = 'game/action/delete.html'
+    model = Action
+    pk_url_kwarg = 'action_pk'
 
     def get_success_url(self):
         return self.moment.get_absolute_url()

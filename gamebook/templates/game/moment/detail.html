@@ -18,7 +18,7 @@
         <h3>Blocks</h3>
         {% for blck in object.blocks.all %}
         <div class="properties-list-item uk-grid">
-            {{ blck }}
+            {{ blck.content }}
         </div>
         {% empty %}
             <p>
@@ -28,6 +28,22 @@
         <div class="properties-list-item uk-margin-top">
             <a href="{% url 'block_create' object.game.pk object.scene.pk object.pk %}" class="uk-button">
                 create block
+            </a>
+        </div>
+        <hr/>
+        <h3>Actions</h3>
+        {% for action in object.actions.all %}
+        <div class="properties-list-item uk-grid">
+            {{ action }}
+        </div>
+        {% empty %}
+            <p>
+                <b>No Actions :(</b>
+            </p>
+        {% endfor %}
+        <div class="properties-list-item uk-margin-top">
+            <a href="{% url 'action_create' object.game.pk object.scene.pk object.pk %}" class="uk-button">
+                create action
             </a>
         </div>
     </div>
