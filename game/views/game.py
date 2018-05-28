@@ -5,6 +5,7 @@ from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from game.models import Game
+from play.models import Session
 from telegrambot.models import User
 
 
@@ -25,12 +26,20 @@ class GameDetailView(LoginRequiredMixin, DetailView):
 
 class GamePlayView(GameDetailView):
     template_name = 'game/play.html'
+    game_session = None
+
+    def get_session(self):
+        if not self.game_session:
+            self.game_session = self.object.users_sessions.filter(
+                user=self.request.user,
+                status=Session.STATUS_ACTIVE
+            )
+
+        return self.game_session
 
     def get_context_data(self, **kwargs):
         context = {
-            'session': self.object.user_game(
-                User.objects.get(pk=settings.BOT_USER_ID)
-            )
+            'session': self.get_session()
         }
         context.update(kwargs)
         return super().get_context_data(**context)
@@ -40,10 +49,9 @@ class GamePlayView(GameDetailView):
 
         action = self.request.POST.get('action', False)
         if action == 'new_game':
-            session = self.object.user_game(
-                User.objects.get(pk=settings.BOT_USER_ID)
-            )
-            session.finish_game()
+            session = self.get_session()
+            if session:
+                session.finish_game()
 
         context = self.get_context_data(object=self.object)
         return self.render_to_response(context)

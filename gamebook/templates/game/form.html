@@ -13,7 +13,14 @@
     </ul>
     <h1>Games</h1>
     <form class="uk-form" action="" method="post">{% csrf_token %}
-        {{ form.as_p }}
-        <button class="uk-button-success uk-button">{% if object %}update{% else %}crete{% endif %}</button>
+        <table class="uk-table uk-table-condensed">
+            {{ form.as_table }}
+            <tr>
+                <td></td>
+                <td>
+                    <button class="uk-button-success uk-button">{% if object %}update{% else %}crete{% endif %}</button>
+                </td>
+            </tr>
+        </table>
     </form>
 {% endblock %}

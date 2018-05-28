@@ -3,6 +3,7 @@ import logging
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.models import User
 
 
 logger = logging.getLogger(__name__)
@@ -31,7 +32,7 @@ class Session(models.Model):
     )
     status = models.CharField(max_length=1, choices=STATUS_CHOICES)
     user = models.ForeignKey(
-        to='telegrambot.User',
+        to=User,
         verbose_name=_('user'),
         related_name='games_sessions',
         on_delete=models.CASCADE
