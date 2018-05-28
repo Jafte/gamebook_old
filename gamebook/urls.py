@@ -21,10 +21,10 @@ from game.views.base import IndexView
 urlpatterns = [
     path('telegrambot/', include('telegrambot.urls')),
 
-    path('accounts/profile/', IndexView.as_view()),
-    path('accounts/', include('allauth.urls')),
-
-    path('games/', include('game.urls')),
+    path('account/profile/', IndexView.as_view()),
+    path('account/', include('allauth.urls')),
+    path('game/', include('game.urls')),
+    path('play/', include('play.urls')),
 
     path('admin/', admin.site.urls),
 

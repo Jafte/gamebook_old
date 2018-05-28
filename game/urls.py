@@ -24,10 +24,6 @@ urlpatterns = [
         'g<int:game_pk>/delete/',
         game.GameDeleteView.as_view(), name="game_delete"
     ),
-    path(
-        'g<int:game_pk>/play/',
-        game.GamePlayView.as_view(), name="game_play"
-    ),
 
     # Character
     path(
