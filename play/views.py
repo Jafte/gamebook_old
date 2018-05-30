@@ -21,10 +21,15 @@ class PlayView(GameDetailView):
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
+        session = self.get_session()
 
         action = self.request.POST.get('action', False)
         if action == 'new_game':
             pass
+
+        if action == 'do':
+            action_id = self.request.POST.get('action_id', False)
+            session.active_character.do_action(action_id)
 
         context = self.get_context_data(object=self.object)
         return self.render_to_response(context)

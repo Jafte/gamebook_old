@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
+from game.models import Action
 
 
 logger = logging.getLogger(__name__)
@@ -134,6 +135,26 @@ class SessionCharacter(models.Model):
             result.append({'id': action.pk, 'content': action.content})
 
         return result
+
+    def do_action(self, action_id):
+        try:
+            action = self.current_moment.actions.get(id=action_id)
+            gl_vision = Gamelog(
+                session=self.session,
+                source=Gamelog.SOURCE_GAME,
+                text=self.get_scene_vision()
+            )
+            gl_action = Gamelog(
+                session=self.session,
+                source=Gamelog.SOURCE_USER,
+                text=action.content
+            )
+            action.fire_after_effects(self)
+            gl_vision.save()
+            gl_action.save()
+            return True
+        except self.current_moment.actions.DoesNotExist:
+            return False
 
     def go_to_scene(self, scene):
         self.current_scene = scene

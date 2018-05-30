@@ -15,3 +15,20 @@ class CharacterAdmin(admin.ModelAdmin):
 @admin.register(Scene)
 class SceneAdmin(admin.ModelAdmin):
     list_display = ('name', 'game', 'created_at')
+
+
+class BlockTabularInline(admin.TabularInline):
+    model = Block
+
+
+@admin.register(Moment)
+class MomentAdmin(admin.ModelAdmin):
+    list_display = ('name', 'game', 'scene', 'created_at')
+    inlines = [
+        BlockTabularInline,
+    ]
+
+
+@admin.register(Action)
+class ActionAdmin(admin.ModelAdmin):
+    list_display = ('content', 'game', 'scene', 'moment', 'created_at')

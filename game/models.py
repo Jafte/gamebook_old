@@ -235,6 +235,9 @@ class Block(models.Model):
 
     def check_condition(self, session_character):
         condition_dict = json.loads(self.condition)
+        if not condition_dict:
+            return True
+
         for condition in condition_dict:
             property_pk, condition_type, condition_value = condition
             try:
@@ -269,8 +272,7 @@ class Action(models.Model):
     created_at = models.DateTimeField(_("Date created"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Date updated"), auto_now=True)
     game = models.ForeignKey(to=Game, verbose_name=_('game'),
-                             related_name='actions', on_delete=models.CASCADE,
-                             editable=False)
+                             related_name='actions', on_delete=models.CASCADE)
     scene = models.ForeignKey(to=Scene, verbose_name=_('scene'),
                               related_name='actions', null=True,
                               on_delete=models.SET_NULL)
@@ -289,6 +291,9 @@ class Action(models.Model):
 
     def check_condition(self, session_character):
         condition_dict = json.loads(self.condition)
+        if not condition_dict:
+            return True
+
         for condition in condition_dict:
             property_pk, condition_type, condition_value = condition
             try:

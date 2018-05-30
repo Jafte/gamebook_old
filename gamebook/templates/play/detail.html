@@ -18,9 +18,24 @@
     </p>
 
     <hr/>
-    {{ session.gamelogs.all }}
+    <div class="uk-margin">
+    {% for gamelog in session.gamelogs.all %}
+        {{ gamelog }}
+    {% endfor %}
+    </div>
 
-    {{ session.get_game_data }}
+    <div class="uk-margin">
+    {{ session.get_game_data.vision|linebreaksbr }}
+    </div>
+
+    <ul class="uk-margin uk-list uk-list-space">
+    {% for action in session.get_game_data.actions %}
+        <li><a href="#" class="uk-button uk-button-small" data-id="{{ action.id }}">{{ action.content }}</a></li>
+    {% empty %}
+        </i><i>похоже тут больше нечего делать :(</i></li>
+    {% endfor %}
+    </ul>
+
     {% else %}
     <p>
         Active game session not found, start new one?
