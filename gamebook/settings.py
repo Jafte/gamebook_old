@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 import os
 import environ
-root = environ.Path(__file__) - 2 # three folder back (/a/b/c/ - 3 = /)
-env = environ.Env(DEBUG=(bool, False),) # set default values and casting
+# three folder back (/a/b/c/ - 3 = /)
+root = environ.Path(__file__) - 2
+# set default values and casting
+env = environ.Env(DEBUG=(bool, False),)
 
 if os.path.exists(root(".env")):
     environ.Env.read_env(root(".env"))
@@ -43,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'huey.contrib.djhuey',
-    #'raven.contrib.django.raven_compat',
+#    'raven.contrib.django.raven_compat',
 
     'telegrambot',
     'game',
@@ -235,3 +237,6 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = env('EMAIL_PORT')
 
 BOT_USER_ID = 28169368
+
+LOGIN_REDIRECT_URL = '/account/profile/'
+LOGIN_URL = '/account/login/'

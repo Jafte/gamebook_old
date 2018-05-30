@@ -121,7 +121,7 @@ class SessionCharacter(models.Model):
 
     def get_scene_vision(self):
         result = []
-        blocks = self.current_scene.get_blocks_for_character(self)
+        blocks = self.current_moment.get_blocks_for_character(self)
         for block in blocks:
             result.append(block.content)
 
@@ -129,7 +129,7 @@ class SessionCharacter(models.Model):
 
     def get_scene_actions(self):
         result = []
-        actions = self.current_scene.get_actions_for_character(self)
+        actions = self.current_moment.get_actions_for_character(self)
         for action in actions:
             result.append({'id': action.pk, 'content': action.content})
 

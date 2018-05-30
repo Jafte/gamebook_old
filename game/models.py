@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse
-from play.models import Session
+from play.models import Session, SessionCharacter
 
 
 logger = logging.getLogger(__name__)
@@ -92,12 +92,13 @@ class Character(models.Model):
         if self.start_scene:
             start_scene = self.start_scene
         else:
-            start_scene = session.game.scenes.first()
+            start_scene = self.game.scenes.first()
 
         session_character = SessionCharacter(
             character=self,
             session=session,
-            current_scene=start_scene
+            current_scene=start_scene,
+            current_moment=start_scene.get_default_moment()
         )
         session_character.save()
         return session_character
@@ -195,6 +196,20 @@ class Moment(models.Model):
 
     def get_absolute_url(self):
         return reverse('moment_detail', args=(self.game.pk, self.scene.pk, self.pk, ))
+
+    def get_blocks_for_character(self, session_character):
+        result = []
+        for block in self.blocks.all():
+            if block.check_condition(session_character):
+                result.append(block)
+        return result
+
+    def get_actions_for_character(self, session_character):
+        result = []
+        for action in self.actions.all():
+            if action.check_condition(session_character):
+                result.append(action)
+        return result
 
 
 class Block(models.Model):
