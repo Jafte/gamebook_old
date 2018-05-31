@@ -1,21 +1,26 @@
 {% extends "base.html" %}
 
-{% block head_title %}Delete scene in game "{{ game.name }}"{% endblock %}
+{% block head_title %}Delete block in game "{{ object.game.name }}"{% endblock %}
 
 {% block content %}
     <ul class="uk-breadcrumb">
         <li><a href="/">Home</a></li>
         <li><a href="{% url 'game_list' %}">Games</a></li>
-        <li><a href="{{ game.get_absolute_url }}">{{ game.name }}</a></li>
-        <li><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></li>
+        <li><a href="{{ object.game.get_absolute_url }}">{{ object.game.name }}</a></li>
+        <li><a href="{{ object.scene.get_absolute_url }}">{{ object.scene.name }}</a></li>
+        <li><a href="{{ object.moment.get_absolute_url }}">{{ object.moment.name }}</a></li>
         <li class="uk-active"><span>Delete scene</span></li>
     </ul>
     <h1>
-        Delete scene
-        "{{ object.name }}"
+        Delete block
     </h1>
     <p>
-        game: {{ game.name }}
+        game "{{ object.game.name }}"<br/>
+        scene "{{ object.scene.name }}"<br/>
+        moment "{{ object.moment.name }}"<br/>
+    </p>
+    <p>
+        {{ object.content }}
     </p>
     <form class="uk-form" action="" method="post">
         {% csrf_token %}

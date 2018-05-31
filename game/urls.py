@@ -1,5 +1,5 @@
 from django.urls import path
-from game.views import game, charatcer, scene, moment, block
+from game.views import game, charatcer, scene, moment, block, action
 
 urlpatterns = [
     # Game
@@ -93,13 +93,21 @@ urlpatterns = [
         block.BlockUpdateView.as_view(), name="block_update"
     ),
     path(
-        'g<int:game_pk>/s<int:scene_pk>/b<int:block_pk>/delete/',
+        'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/b<int:block_pk>/delete/',
         block.BlockDeleteView.as_view(), name="block_delete"
     ),
 
-    # Scene Action
-#    path('g<int:game_pk>/s<int:scene_pk>/create-action/', SceneCreateView.as_view(), name="scene_action_create"),
-#    path('g<int:game_pk>/s<int:scene_pk>/a<int:action_pk>/', SceneDetailView.as_view(), name="scene_action_detail"),
-#    path('g<int:game_pk>/s<int:scene_pk>/a<int:action_pk>/edit/', SceneUpdateView.as_view(), name="scene_action_update"),
-#    path('g<int:game_pk>/s<int:scene_pk>/a<int:action_pk>/delete/', SceneDeleteView.as_view(), name="scene_action_delete"),
+    # Block Action
+    path(
+        'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/create-action/',
+        action.ActionCreateView.as_view(), name="moment_action_create"
+    ),
+    path(
+        'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/a<int:action_pk>/edit/',
+        action.ActionUpdateView.as_view(), name="moment_action_update"
+    ),
+    path(
+        'g<int:game_pk>/s<int:scene_pk>/m<int:moment_pk>/a<int:action_pk>/delete/',
+        action.ActionDeleteView.as_view(), name="moment_action_delete"
+    ),
 ]

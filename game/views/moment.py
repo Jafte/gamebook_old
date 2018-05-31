@@ -1,4 +1,3 @@
-from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from game.models import Moment
 from game.views import base

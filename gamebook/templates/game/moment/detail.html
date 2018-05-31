@@ -18,7 +18,26 @@
         <h3>Blocks</h3>
         {% for blck in object.blocks.all %}
         <div class="properties-list-item uk-grid">
-            {{ blck.content }}
+            <div class="uk-width-2-5">
+                {{ blck.content }}
+            </div>
+            <div class="uk-width-2-5">
+                {{ blck.condition }}
+            </div>
+            <div class="uk-width-1-5">
+                <a
+                    class="uk-button uk-button-danger uk-button-mini"
+                    href="{% url 'block_delete' blck.game.pk blck.scene.pk blck.moment.pk blck.pk %}"
+                    >
+                    remove
+                </a>
+                <a
+                    class="uk-button uk-button-primary uk-button-mini"
+                    href="{% url 'block_update' blck.game.pk blck.scene.pk blck.moment.pk blck.pk %}"
+                    >
+                    edit
+                </a>
+            </div>
         </div>
         {% empty %}
             <p>
@@ -34,7 +53,26 @@
         <h3>Actions</h3>
         {% for action in object.actions.all %}
         <div class="properties-list-item uk-grid">
-            {{ action }}
+            <div class="uk-width-2-5">
+                {{ action.content }}
+            </div>
+            <div class="uk-width-2-5">
+                {{ action.condition }}
+            </div>
+            <div class="uk-width-1-5">
+                <a
+                    class="uk-button uk-button-danger uk-button-mini"
+                    href="{% url 'moment_action_delete' action.game.pk action.scene.pk action.moment.pk action.pk %}"
+                    >
+                    remove
+                </a>
+                <a
+                    class="uk-button uk-button-primary uk-button-mini"
+                    href="{% url 'moment_action_update' action.game.pk action.scene.pk action.moment.pk action.pk %}"
+                    >
+                    edit
+                </a>
+            </div>
         </div>
         {% empty %}
             <p>
@@ -42,7 +80,7 @@
             </p>
         {% endfor %}
         <div class="properties-list-item uk-margin-top">
-            <a href="{% url 'action_create' object.game.pk object.scene.pk object.pk %}" class="uk-button">
+            <a href="{% url 'moment_action_create' object.game.pk object.scene.pk object.pk %}" class="uk-button">
                 create action
             </a>
         </div>

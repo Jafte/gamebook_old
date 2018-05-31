@@ -1,4 +1,5 @@
-from play.models import Session
+from django.shortcuts import redirect
+from django.urls import reverse
 from game.views.game import GameDetailView
 
 
@@ -30,6 +31,7 @@ class PlayView(GameDetailView):
         if action == 'do':
             action_id = self.request.POST.get('action_id', False)
             session.active_character.do_action(action_id)
+            return redirect(reverse('game_play', args=(self.object.pk, )))
 
         context = self.get_context_data(object=self.object)
         return self.render_to_response(context)

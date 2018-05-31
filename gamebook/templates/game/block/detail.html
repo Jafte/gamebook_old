@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block head_title %}{{ object.name }} in game "{{ object.game.name }}"{% endblock %}
+{% block head_title %}Text block in game "{{ object.game.name }}"{% endblock %}
 
 {% block content %}
     <ul class="uk-breadcrumb">
@@ -8,26 +8,31 @@
         <li><a href="{% url 'game_list' %}">Games</a></li>
         <li><a href="{{ object.game.get_absolute_url }}">{{ object.game.name }}</a></li>
         <li><a href="{{ object.scene.get_absolute_url }}">{{ object.scene.name }}</a></li>
+        {% if object.moment %}
+        <li><a href="{{ object.moment.get_absolute_url }}">{{ object.scene.name }}</a></li>
+        {% endif %}
         <li class="uk-active"><span>{{ object.name }}</span></li>
     </ul>
-    <h1>{{ object.name }}</h1>
-    <p>
-        {{ object.description }}
-    </p>
-    <div class="properties-list">
-        <h3>Blocks</h3>
-        {% for blck in object.blocks.all %}
-        <div class="properties-list-item uk-grid">
-            {{ blck }}
+    <h1>Text block</h1>
+    <div class="properties-list-item uk-grid">
+        <div class="uk-width-1-2">
+            {{ object.content }}
         </div>
-        {% empty %}
-            <p>
-                <b>No Blocks :(</b>
-            </p>
-        {% endfor %}
-        <div class="properties-list-item uk-margin-top">
-            <a href="{% url 'block_create' object.game.pk object.scene.pk object.pk %}" class="uk-button">
-                create block
+        <div class="uk-width-1-2">
+            {{ object.condition }}
+        </div>
+        <div class="uk-width-1-1">
+            <a
+                class="uk-button uk-button-danger"
+                href="{% url 'block_delete' blck.game.pk blck.scene.pk blck.moment.pk blck.pk %}"
+                >
+                remove
+            </a>
+            <a
+                class="uk-button uk-button-primary"
+                href="{% url 'block_update' blck.game.pk blck.scene.pk blck.moment.pk blck.pk %}"
+                >
+                edit
             </a>
         </div>
     </div>
