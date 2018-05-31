@@ -1,5 +1,5 @@
 from django.contrib import admin
-from game.models import Game, Character, Scene, Moment, Block, Action
+from game.models import Game, Character, Scene, Moment, Block, Action, AfterEffect
 
 
 @admin.register(Game)
@@ -21,6 +21,10 @@ class BlockTabularInline(admin.TabularInline):
     model = Block
 
 
+class AfterEffectTabularInline(admin.TabularInline):
+    model = AfterEffect
+
+
 @admin.register(Moment)
 class MomentAdmin(admin.ModelAdmin):
     list_display = ('name', 'game', 'scene', 'created_at')
@@ -32,3 +36,6 @@ class MomentAdmin(admin.ModelAdmin):
 @admin.register(Action)
 class ActionAdmin(admin.ModelAdmin):
     list_display = ('content', 'game', 'scene', 'moment', 'created_at')
+    inlines = [
+        AfterEffectTabularInline,
+    ]

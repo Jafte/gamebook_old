@@ -20,17 +20,29 @@
     <hr/>
     <div class="uk-margin">
     {% for gamelog in session.gamelogs.all %}
-        {{ gamelog }}
+        {{ gamelog.created_at|date:"d.m.Y H:i:s" }}, {{ gamelog.get_source_display }}<br/>
+        {{ gamelog.text|linebreaksbr }}
+        <br/><br/>
     {% endfor %}
     </div>
 
     <div class="uk-margin">
-    {{ session.get_game_data.vision|linebreaksbr }}
+        {% now "d.m.Y H:i:s" %}, current vision<br/>
+        {{ session.get_game_data.vision|linebreaksbr }}
     </div>
 
     <ul class="uk-margin uk-list uk-list-space">
     {% for action in session.get_game_data.actions %}
-        <li><a href="#" class="uk-button uk-button-small" data-id="{{ action.id }}">{{ action.content }}</a></li>
+        <li>
+            <form class="uk-form" action="" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="do" />
+                <input type="hidden" name="action_id" value="{{ action.id }}" />
+                <button class="uk-button uk-button-small">
+                    {{ action.content }}
+                </button>
+            </form>
+        </li>
     {% empty %}
         </i><i>похоже тут больше нечего делать :(</i></li>
     {% endfor %}

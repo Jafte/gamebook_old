@@ -4,7 +4,6 @@ from django.db import models
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
-from game.models import Action
 
 
 logger = logging.getLogger(__name__)
@@ -70,8 +69,8 @@ class Session(models.Model):
                 pk=action_pk
             )
             action.fire_after_effects(self.active_character)
-            return action
-        except Action.DoesNotExist:
+            return True
+        except models.Model.DoesNotExist:
             logger.debug(
                 "Not found action with pk %s in scene %S" %
                 (action_pk, self.active_character.current_scene)
@@ -229,4 +228,4 @@ class Gamelog(models.Model):
     text = models.TextField(verbose_name=_('text'))
 
     class Meta:
-        ordering = ['-created_at', ]
+        ordering = ['created_at', ]
