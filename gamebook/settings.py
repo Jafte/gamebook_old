@@ -44,10 +44,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'huey.contrib.djhuey',
+#    'huey.contrib.djhuey',
 #    'raven.contrib.django.raven_compat',
 
-    'telegrambot',
+#    'telegrambot',
     'game',
     'play',
 
@@ -105,41 +105,40 @@ WSGI_APPLICATION = 'gamebook.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('POSTGRES_DB'),
-        'USER': env('POSTGRES_USER'),
-        'PASSWORD': env('POSTGRES_PASSWORD'),
-        'HOST': env('POSTGRES_HOST'),
-        'PORT': 5432,
+        'ENGINE': env('DB_ENGINE'),
+        'NAME': env('DB_DB'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
     }
 }
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "IGNORE_EXCEPTIONS": True,
-        }
-    }
-}
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://redis:6379/1",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#             "IGNORE_EXCEPTIONS": True,
+#         }
+#     }
+# }
 
-HUEY = {
-    'name': 'gamebook',
-    'result_store': False,
-    'events': False,
-    'always_eager': False,
-    'store_errors': True,
-    'blocking': False,
-    'url': 'redis://redis:6379/?db=0',
-    'consumer': {
-        'workers': 2,
-        'utc': True,
-        'scheduler_interval': 1,
-        'periodic': True,
-    },
-}
+# HUEY = {
+#     'name': 'gamebook',
+#     'result_store': False,
+#     'events': False,
+#     'always_eager': False,
+#     'store_errors': True,
+#     'blocking': False,
+#     'url': 'redis://redis:6379/?db=0',
+#     'consumer': {
+#         'workers': 2,
+#         'utc': True,
+#         'scheduler_interval': 1,
+#         'periodic': True,
+#     },
+# }
 
 
 # Password validation

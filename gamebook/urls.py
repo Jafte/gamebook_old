@@ -19,7 +19,7 @@ from django.conf import settings
 from game.views.base import IndexView
 
 urlpatterns = [
-    path('telegrambot/', include('telegrambot.urls')),
+#    path('telegrambot/', include('telegrambot.urls')),
 
     path('account/profile/', IndexView.as_view()),
     path('account/', include('allauth.urls')),
