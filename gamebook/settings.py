@@ -186,6 +186,7 @@ STATIC_ROOT = root("static")
 
 RAVEN_CONFIG = {
     'dsn': env('DJANGO_SENTRY_DSN', None),
+    'transport': raven.transport.http.HTTPTransport,
     'release': raven.fetch_git_sha(root()),
 }
 
