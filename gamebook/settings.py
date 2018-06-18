@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 import os
+import raven
 import environ
 # three folder back (/a/b/c/ - 3 = /)
 root = environ.Path(__file__) - 2
@@ -45,7 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
 #    'huey.contrib.djhuey',
-#    'raven.contrib.django.raven_compat',
+    'raven.contrib.django.raven_compat',
 
 #    'telegrambot',
     'game',
@@ -185,7 +186,7 @@ STATIC_ROOT = root("static")
 
 RAVEN_CONFIG = {
     'dsn': env('DJANGO_SENTRY_DSN', None),
-    'release': '0.0.0',
+    'release': raven.fetch_git_sha(root()),
 }
 
 
