@@ -81,7 +81,7 @@ class SceneMixin(GameMixin):
         if not self.scene:
             queryset = Scene.objects.filter(game=self.get_game())
 
-            pk = self.kwargs.get(self.game_pk_url_kwarg, None)
+            pk = self.kwargs.get(self.scene_pk_url_kwarg, None)
             queryset = queryset.filter(pk=pk)
 
             try:
