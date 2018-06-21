@@ -11,8 +11,17 @@
     </ul>
 
     <h1>{{ object.name }}</h1>
+    
+    <div class="uk-grid uk-grid-divider uk-margin">
+        <div class="uk-width-1-2">
+            <form class="uk-form" action="" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="new_game" />
+                <button class="uk-button-success uk-button">new game</button>
+            </form>
+        </div>
+    </div>
 
-    {% if session %}
     <p>
         активный перс: {{ session.active_character.character.name }}
     </p>
@@ -47,20 +56,5 @@
         </i><i>похоже тут больше нечего делать :(</i></li>
     {% endfor %}
     </ul>
-
-    {% else %}
-    <p>
-        Active game session not found, start new one?
-    </p>
-    <div class="uk-grid uk-grid-divider uk-margin">
-        <div class="uk-width-1-2">
-            <form class="uk-form" action="" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="new_game" />
-                <button class="uk-button-success uk-button">new game</button>
-            </form>
-        </div>
-    </div>
-    {% endif %}
 
 {% endblock %}

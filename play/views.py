@@ -26,7 +26,8 @@ class PlayView(GameDetailView):
 
         action = self.request.POST.get('action', False)
         if action == 'new_game':
-            pass
+            session.finish_game()
+            return redirect(reverse('game_play', args=(self.object.pk, )))
 
         if action == 'do':
             action_id = self.request.POST.get('action_id', False)
