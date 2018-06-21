@@ -28,6 +28,7 @@ class AfterEffectTabularInline(admin.TabularInline):
 @admin.register(Moment)
 class MomentAdmin(admin.ModelAdmin):
     list_display = ('name', 'game', 'scene', 'created_at')
+    list_filter = ('game', 'scene',)
     inlines = [
         BlockTabularInline,
     ]
@@ -36,6 +37,7 @@ class MomentAdmin(admin.ModelAdmin):
 @admin.register(Action)
 class ActionAdmin(admin.ModelAdmin):
     list_display = ('content', 'game', 'scene', 'moment', 'created_at')
+    list_filter = ('game', 'scene',)
     inlines = [
         AfterEffectTabularInline,
     ]
